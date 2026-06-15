@@ -1379,6 +1379,51 @@ function load(){
   // Asegurar que riskThreshold sea numérico (fix: a veces se guardaba como string)
   S.cfg.riskThreshold=parseInt(S.cfg.riskThreshold)||75;
 }
+function loadDemoData(){
+  const tid="demo_team_01";
+  const mid="demo_match_01";
+  const pids=["d1","d2","d3","d4","d5","d6","d7","d8","d9","d10","d11","d12"];
+  const names=["García, C.","López, M.","Martín, J.","Ruiz, A.","Pérez, D.","Sánchez, R.","Torres, L.","Moreno, P.","Jiménez, S.","Romero, F.","Álvarez, T.","Navarro, K."];
+  const numbers=[4,7,10,14,21,5,8,11,13,23,6,33];
+  S.teams=[{id:tid,name:"Kortline Demo",color:"#F06318",quarters:4}];
+  S.players[tid]=pids.map((id,i)=>({id,name:names[i],number:numbers[i],active:true}));
+  const convocados=pids;
+  const titulares=pids.slice(0,5);
+  const stats={};
+  stats[pids[0]]={p1m:2,p1a:1,p2m:3,p2a:2,p3m:1,p3a:1,ro:1,rd:4,ast:3,foul:2,ftech:0,funsport:0,fdq:0,stl:1,blk:0,to:1};
+  stats[pids[1]]={p1m:4,p1a:2,p2m:2,p2a:1,p3m:2,p3a:2,ro:0,rd:2,ast:5,foul:1,ftech:0,funsport:0,fdq:0,stl:2,blk:0,to:2};
+  stats[pids[2]]={p1m:0,p1a:0,p2m:1,p2a:3,p3m:0,p3a:1,ro:3,rd:5,ast:0,foul:3,ftech:0,funsport:0,fdq:0,stl:0,blk:2,to:1};
+  stats[pids[3]]={p1m:2,p1a:2,p2m:1,p2a:1,p3m:0,p3a:0,ro:2,rd:3,ast:1,foul:4,ftech:0,funsport:0,fdq:0,stl:0,blk:1,to:0};
+  stats[pids[4]]={p1m:1,p1a:1,p2m:0,p2a:1,p3m:1,p3a:2,ro:0,rd:1,ast:2,foul:1,ftech:1,funsport:0,fdq:0,stl:1,blk:0,to:3};
+  stats[pids[5]]={p1m:3,p1a:0,p2m:2,p2a:1,p3m:0,p3a:0,ro:0,rd:2,ast:0,foul:0,ftech:0,funsport:0,fdq:0,stl:0,blk:0,to:0};
+  stats[pids[6]]={p1m:0,p1a:0,p2m:1,p2a:0,p3m:1,p3a:1,ro:1,rd:1,ast:1,foul:2,ftech:0,funsport:0,fdq:0,stl:1,blk:0,to:1};
+  pids.slice(7).forEach(id=>{stats[id]={p1m:0,p1a:0,p2m:0,p2a:0,p3m:0,p3a:0,ro:0,rd:0,ast:0,foul:0,ftech:0,funsport:0,fdq:0,stl:0,blk:0,to:0};});
+  const live={
+    q:3,maxQ:3,
+    qScores:[[18,14],[16,19],[4,5],[0,0],[0,0]],
+    teamFouls:[4,3,2,0,0],
+    stats,rivalStats:{},
+    log:[
+      {pid:pids[1],action:"p3m",pts:3,q:3,clockAt:534,desc:"+3 López",ts:Date.now()-60000},
+      {pid:pids[0],action:"foul",pts:0,q:3,clockAt:498,desc:"Falta García",ts:Date.now()-45000},
+      {pid:pids[2],action:"rd",pts:0,q:3,clockAt:490,desc:"R.Def Martín",ts:Date.now()-30000},
+      {pid:pids[0],action:"p2m",pts:2,q:3,clockAt:471,desc:"+2 García",ts:Date.now()-15000},
+    ],
+    selPid:null,onCourt:pids.slice(0,5),rivalOnCourt:[],
+    activeTeam:"our",clockSec:471,clockMins:10,clockRunning:false,
+    timeouts:{our:[1,1,1,0,0,0],rival:[0,1,0,0,0,0]},
+    rivalFouls:[2,1,1,0,0],
+    minTracked:{},inSince:{},plusMinusTracked:{},plusMinusBaseline:{}
+  };
+  pids.slice(0,5).forEach(id=>{live.inSince[id]=0;live.plusMinusBaseline[id]=0;});
+  S.matches[tid]=[{id:mid,rival:"CB Rival",date:td(),location:"home",quarters:4,qMins:10,convocados,titulares,live,finished:false}];
+  S.clubName="Kortline Demo";S.clubAbrev="KDM";
+  save();
+  S.teamId=tid;S.matchId=mid;S.screen="liveGame";
+  render();
+  toast("✅ Datos de prueba cargados — Q3, 38-38");
+}
+window.loadDemoData=loadDemoData;
 function save(){
   // v1.8.3: cada lsSet devuelve true/false. save() devuelve false si algún
   // dato real no cupo (para que handlePhoto y otros sepan revertir).
@@ -2299,7 +2344,7 @@ function toggleHtml(key,title,desc){const on=S.cfg.features[key];return`<div cla
 function equiposScreen(){
   const allSessions=S.sessions;
   const cards=S.teams.length===0
-    ?`<div class="empty"><div style="font-size:48px;margin-bottom:12px;opacity:.4">👥</div><div style="font-size:14px;line-height:1.7;color:var(--tm)">Sin equipos aún.<br/>Pulsa <b style="color:var(--orange)">＋</b> para crear el primero.</div></div>`
+    ?`<div class="empty"><div style="font-size:48px;margin-bottom:12px;opacity:.4">👥</div><div style="font-size:14px;line-height:1.7;color:var(--tm)">Sin equipos aún.<br/>Pulsa <b style="color:var(--orange)">＋</b> para crear el primero.</div><button onclick="loadDemoData()" style="margin-top:16px;padding:12px 24px;border-radius:10px;border:none;background:var(--orange);color:white;font-size:14px;font-weight:800;cursor:pointer">🏀 Cargar datos de prueba</button></div>`
     :S.teams.map(t=>{
       const players=pl(t.id);
       const sessions=Object.entries(allSessions).filter(([k])=>k.startsWith(t.id+"_")).map(([,v])=>v);
@@ -5988,6 +6033,7 @@ function liveGame(){
   return`<header class="header live-header" style="padding-bottom:10px">
   <div class="hrow" style="margin-bottom:8px">
     <button class="bbtn" onclick="exitLiveGame()">←</button>
+    ${S.teamId==="demo_team_01"?`<button onclick="loadDemoData()" style="padding:4px 8px;border-radius:6px;border:1px solid rgba(249,115,22,.4);background:rgba(249,115,22,.12);color:var(--orange);font-size:10px;font-weight:800;cursor:pointer">🔄 Reset demo</button>`:""}
     <div style="flex:1">
       <div style="display:flex;align-items:center;gap:6px">
         <span style="width:7px;height:7px;border-radius:50%;background:#ef4444;box-shadow:0 0 5px #ef4444;flex-shrink:0;animation:spin .8s step-end infinite"></span>
