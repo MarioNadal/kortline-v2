@@ -1,0 +1,457 @@
+﻿*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0d2244;--navy2:#1a3a6b;
+  --orange:#F06318;--orange2:#B83808;--orangeG:linear-gradient(135deg,#F06318,#B83808);
+  --bg:#070f1e;--s:#0c1828;--s2:#111f34;--s3:#1a3050;--border:#1d3654;
+  --tx:#eef2ff;--td:#7a9cc8;--tm:#3a5a80;
+  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;--gray:#6b7280;
+  --font-d:'Barlow Condensed',system-ui,sans-serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
+  --r:12px;
+}
+body{font-family:var(--font-b);background:var(--bg);color:var(--tx);min-height:100vh;min-height:100dvh;background-image:radial-gradient(rgba(29,54,84,0.22) 1px,transparent 1px);background-size:24px 24px;overflow-x:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;overscroll-behavior-y:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+#root{max-width:430px;margin:0 auto;position:relative;overflow-x:hidden;}
+
+/* ── Header ── */
+.header{padding:13px 16px;background:rgba(6,12,24,0.92);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);;padding-top:calc(14px + env(safe-area-inset-top));}
+.hrow{display:flex;align-items:center;gap:10px;}
+.bbtn{background:var(--s2);border:1px solid var(--border);color:var(--tx);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.bbtn:hover{background:var(--s3);}
+
+/* ── FAB de añadir actividad sorpresa (HOY · v1.6.12) ── */
+.fab-add{position:fixed;right:18px;bottom:calc(74px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange2));color:white;border:none;box-shadow:0 6px 20px rgba(240,99,24,.5),0 2px 6px rgba(0,0,0,.45);font-size:30px;font-weight:300;cursor:pointer;z-index:99;display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;line-height:1;padding:0;font-family:var(--font-d);}
+.fab-add:active{transform:scale(.92);box-shadow:0 3px 10px rgba(240,99,24,.4);}
+.fab-add:hover{box-shadow:0 8px 24px rgba(240,99,24,.55),0 2px 6px rgba(0,0,0,.45);}
+@media (min-width:430px){.fab-add{right:calc(50% - 215px + 18px);}}
+
+/* ── Nav ── */
+.nav{display:flex;background:rgba(10,20,38,0.95);border-top:1px solid var(--border);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:100;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);;padding-bottom:env(safe-area-inset-bottom);}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 10px;border:none;background:transparent;color:var(--tm);cursor:pointer;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-family:var(--font-b);}
+.nb.on{color:var(--orange);}
+.nb .ni{font-size:20px;line-height:1.2;}
+
+/* ── Content ── */
+.content{padding:14px 16px 90px;padding-bottom:calc(90px + env(safe-area-inset-bottom));overflow-x:hidden;}
+
+/* ── Typography ── */
+.sval{font-family:var(--font-d);font-weight:900;font-size:38px;color:var(--orange);line-height:1;}
+.slbl{font-size:10px;color:var(--td);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-family:var(--font-b);}
+.stat-num{font-family:var(--font-d);font-weight:900;}
+
+/* ── Cards ── */
+.sbox{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.card{background:var(--s);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;}
+.team-card{background:var(--s);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s;}
+.team-card:hover{border-color:var(--s3);transform:translateY(-1px);}
+.team-accent{height:4px;}
+.team-body{padding:14px;}
+.team-badge{background:rgba(240,99,24,.15);color:var(--orange);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.section-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:10px;}
+
+/* ── Chips ── */
+.schedule-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(240,99,24,.15);color:var(--orange);margin:2px;}
+
+/* ── FAB ── */
+.fab{position:fixed;bottom:calc(74px + env(safe-area-inset-bottom));right:calc(50% - 200px);width:52px;height:52px;border-radius:14px;background:var(--orangeG);border:none;cursor:pointer;font-size:28px;color:white;box-shadow:0 4px 24px rgba(240,99,24,.45);z-index:99;transition:transform .15s,box-shadow .15s;}
+.fab:hover{transform:scale(1.06);box-shadow:0 6px 30px rgba(240,99,24,.55);}
+
+/* ── Modals ── */
+.modal{background:var(--s);border-radius:20px 20px 0 0;border-top:1px solid var(--border);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;padding:20px;max-height:92vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--navy2) var(--s);box-sizing:border-box;z-index:10000;animation:modalSlideUp .3s ease;overscroll-behavior:none;}
+@keyframes modalSlideUp{from{transform:translateX(-50%) translateY(100%);}to{transform:translateX(-50%) translateY(0);}}
+.modal::-webkit-scrollbar{width:4px;}
+.modal::-webkit-scrollbar-track{background:var(--s);}
+.modal::-webkit-scrollbar-thumb{background:var(--navy2);border-radius:2px;}
+.mhandle{width:100%;height:36px;background:transparent;margin:-8px auto 8px;cursor:grab;touch-action:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mhandle::after{content:"";display:block;width:34px;height:4px;background:var(--s3);border-radius:2px;pointer-events:none;}
+.mtitle{font-family:var(--font-d);font-weight:900;font-size:22px;margin-bottom:4px;letter-spacing:.5px;}
+.msub{font-size:13px;color:var(--td);margin-bottom:14px;line-height:1.5;}
+
+/* ── Forms ── */
+.fg{margin-bottom:13px;}
+.fl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--td);margin-bottom:5px;display:block;font-family:var(--font-b);}
+.fi{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:11px 12px;color:var(--tx);font-size:16px;outline:none;font-family:var(--font-b);min-height:44px;box-sizing:border-box;}
+.fi:focus{border-color:var(--orange);}
+.frow{display:flex;gap:8px;}.frow .fg{flex:1;}
+.cdot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;display:inline-block;flex-shrink:0;}
+.cdot.s{border-color:white;}
+
+/* ── Buttons ── */
+.btn-p{width:100%;padding:13px;border:none;border-radius:9px;font-weight:800;font-size:15px;cursor:pointer;background:var(--orangeG);color:white;margin-top:4px;font-family:var(--font-b);transition:opacity .15s;}
+.btn-p:hover{opacity:.9;}
+.btn-s{width:100%;padding:13px;border:1px solid var(--border);border-radius:9px;font-weight:700;font-size:15px;cursor:pointer;background:var(--s2);color:var(--td);margin-top:8px;font-family:var(--font-b);}
+.btn-d{width:100%;padding:13px;border:1px solid rgba(239,68,68,.3);border-radius:9px;font-weight:700;font-size:15px;cursor:pointer;background:rgba(239,68,68,.08);color:#ef4444;margin-top:8px;font-family:var(--font-b);}
+.btn-d:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ── Player rows ── */
+.pr{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);gap:10px;}
+.pr:last-child{border-bottom:none;}
+.pnum{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:900;font-size:16px;flex-shrink:0;color:white;}
+
+/* ── Attendance ── */
+.agrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
+.abox{border-radius:8px;padding:8px 2px;text-align:center;}
+.dsel{display:flex;align-items:center;background:var(--s);padding:10px 14px;border-radius:10px;border:1px solid var(--border);margin-bottom:12px;gap:4px;}
+.qg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.qb{border-radius:10px;padding:12px 5px;cursor:pointer;text-align:center;border:1px solid var(--border);background:var(--s2);transition:border-color .2s,background .2s;}
+.qb.hi{border-color:var(--orange);background:rgba(240,99,24,.1);}
+
+/* ── Stats ── */
+.ptabs{display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap;}
+.ptab{padding:5px 12px;border-radius:18px;border:1px solid var(--border);background:var(--s2);color:var(--td);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-b);}
+.ptab.on{background:rgba(240,99,24,.2);border-color:var(--orange);color:var(--orange);}
+
+/* ── View toggle ── */
+.view-tabs{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:12px;}
+.view-tab{flex:1;padding:8px 0;border:none;border-radius:8px;background:transparent;color:var(--td);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font-b);}
+.view-tab.on{background:var(--s3);color:var(--tx);box-shadow:0 2px 8px rgba(0,0,0,.35);}
+
+/* ── Export bar ── */
+.export-bar{display:flex;gap:8px;margin-bottom:14px;}
+.btn-xpdf{flex:1;padding:10px 8px;border:1px solid rgba(239,68,68,.35);border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;background:rgba(239,68,68,.08);color:#ef4444;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--font-b);}
+.btn-xxls{flex:1;padding:10px 8px;border:1px solid rgba(34,197,94,.35);border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;background:rgba(34,197,94,.08);color:#22c55e;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--font-b);}
+
+/* ── Charts ── */
+.chart-card{background:var(--s);border:1px solid var(--border);border-radius:14px;padding:16px 14px;margin-bottom:12px;min-width:0;overflow:hidden;}
+.chart-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--td);margin-bottom:12px;font-family:var(--font-b);}
+.chart-wrap{position:relative;width:100%;overflow:hidden;}
+.chart-wrap canvas{max-width:100%!important;}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.chart-grid-2 .chart-card{margin-bottom:0;min-width:0;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.chart-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--td);}
+.chart-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ── History ── */
+.he{padding:12px 14px;border-bottom:1px solid var(--border);}
+.he:last-child{border-bottom:none;}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:40px 16px;color:var(--tm);}
+
+/* ── Toast ── */
+.toast{position:fixed;top:68px;left:50%;transform:translateX(-50%);background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.6);font-family:var(--font-b);}
+
+/* ── Toggles ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info{flex:1;padding-right:12px;}
+.toggle-title{font-weight:700;font-size:14px;}
+.toggle-desc{font-size:12px;color:var(--td);margin-top:2px;line-height:1.4;}
+.tswitch{width:46px;height:26px;background:var(--s3);border-radius:13px;cursor:pointer;position:relative;border:none;flex-shrink:0;transition:background .2s;}
+.tswitch.on{background:var(--orange);}
+.tswitch::after{content:"";width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.tswitch.on::after{transform:translateX(20px);}
+
+/* ── Justification ── */
+.just-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:1px dashed #6b728066;background:rgba(107,114,128,.1);color:#9ca3af;margin-top:3px;}
+.just-pill.filled{border-style:solid;border-color:#6b7280;background:rgba(107,114,128,.2);color:#d1d5db;}
+.just-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.just-opt{padding:10px 8px;border-radius:10px;border:1px solid var(--border);background:var(--s2);cursor:pointer;text-align:center;}
+.just-opt.sel{border-color:#6b7280;background:rgba(107,114,128,.2);}
+.just-opt .ji{font-size:22px;margin-bottom:4px;}
+.just-opt .jl{font-size:12px;font-weight:700;color:var(--td);}
+.just-opt.sel .jl{color:#d1d5db;}
+
+/* ── Share ── */
+.share-preview{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;line-height:1.6;color:var(--tx);white-space:pre-wrap;word-break:break-word;max-height:200px;overflow-y:auto;margin-bottom:8px;font-family:monospace;}
+.share-mode-card{border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:14px;}
+.share-mode-header{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--s2);}
+.share-mode-body{padding:0 14px 14px;display:none;}
+.share-mode-body.open{display:block;}
+.btn-wa{width:100%;padding:12px;border:none;border-radius:8px;font-weight:800;font-size:14px;cursor:pointer;background:linear-gradient(135deg,#25d366,#128c7e);color:white;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-b);}
+.btn-copy{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;background:var(--s2);color:var(--td);display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-b);}
+
+/* ── Settings ── */
+.stg-sec{margin-bottom:18px;}
+.stg-sec-title{font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--orange);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);font-family:var(--font-b);}
+.logo-upload{width:80px;height:80px;border-radius:14px;background:var(--s2);border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin:0 auto 8px;overflow:hidden;}
+
+/* ── Schedule ── */
+.day-sched-row{display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px solid var(--border);min-height:52px;}
+.day-sched-row:last-child{border-bottom:none;}
+.day-check-wrap{display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-height:44px;padding:4px 0;-webkit-tap-highlight-color:rgba(240,99,24,0.08);user-select:none;-webkit-user-select:none;}
+.day-check{width:24px;height:24px;accent-color:var(--orange);cursor:pointer;flex-shrink:0;margin:0;-webkit-appearance:auto!important;appearance:auto!important;}
+.day-name-lbl{font-weight:600;font-size:15px;cursor:pointer;flex:1;color:var(--tx);}
+.day-time-input{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 10px;color:var(--tx);font-size:16px!important;outline:none;width:115px;min-height:44px;-webkit-appearance:none;appearance:none;font-family:var(--font-b);flex-shrink:0;text-align:center;box-sizing:border-box;}
+.day-time-input:focus{border-color:var(--orange);}
+.day-time-input:disabled{opacity:.3;cursor:not-allowed;}
+.day-time-input::-webkit-date-and-time-value{text-align:center;}
+
+/* ── Stars ── */
+.stars span{font-size:22px;cursor:pointer;line-height:1;transition:transform .1s;}
+.stars span:hover{transform:scale(1.2);}
+.stars-sm span{font-size:16px;cursor:pointer;line-height:1;}
+
+/* ── Photo ── */
+.photo-box{background:var(--s2);border:1.5px dashed var(--border);border-radius:10px;text-align:center;padding:14px;cursor:pointer;overflow:hidden;}
+.photo-box:hover{border-color:var(--orange);}
+.photo-box img{width:100%;border-radius:8px;max-height:180px;object-fit:cover;}
+
+/* ── Dorsal controls ── */
+.dorsal-wrap{display:flex;gap:6px;align-items:stretch;}
+.dorsal-btn{background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--tx);font-size:20px;font-weight:700;width:40px;min-width:40px;cursor:pointer;padding:0;line-height:1;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+.dorsal-btn:hover{border-color:var(--orange);color:var(--orange);}
+.dorsal-btn:active{background:rgba(240,99,24,.12);}
+.dorsal-input-wrap{position:relative;flex:1;}
+.dorsal-hash{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--td);font-weight:700;font-size:16px;pointer-events:none;}
+.dorsal-input{padding-left:24px!important;text-align:left!important;}
+
+/* ── Player photo / avatar ── */
+.ppic-box{background:var(--s2);border:1.5px dashed var(--border);border-radius:50%;text-align:center;cursor:pointer;overflow:hidden;width:72px;height:72px;display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;}
+.ppic-box:hover{border-color:var(--orange);}
+.ppic-box img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.ppic-box .ppic-ph{font-size:28px;color:var(--tm);}
+.ppic-clear{position:absolute;top:-4px;right:-4px;background:#ef4444;color:white;border:2px solid var(--s);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;font-weight:700;z-index:2;}
+.pavatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border);}
+.pnum-wrap{position:relative;flex-shrink:0;}
+.injury-dot{position:absolute;top:-4px;right:-4px;background:#ef4444;border:2px solid var(--s);border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:9px;color:white;font-weight:900;z-index:2;box-shadow:0 0 0 0 rgba(239,68,68,.6);animation:pulseInj 1.8s infinite;}
+@keyframes pulseInj{0%{box-shadow:0 0 0 0 rgba(239,68,68,.6);}70%{box-shadow:0 0 0 6px rgba(239,68,68,0);}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);}}
+/* Long-press unlock for team score */
+.lp-ring{position:relative;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--s2);border:2px solid var(--border);transition:border-color .2s;touch-action:none;-webkit-user-select:none;user-select:none;}
+.lp-ring svg.lp-arc{position:absolute;top:-2px;left:-2px;width:40px;height:40px;transform:rotate(-90deg);pointer-events:none;}
+.lp-ring svg.lp-arc circle{fill:none;stroke:var(--orange);stroke-width:3;stroke-dasharray:113;stroke-dashoffset:113;stroke-linecap:round;}
+.lp-ring.pressing svg.lp-arc circle{transition:stroke-dashoffset .8s linear;stroke-dashoffset:0;}
+.lp-ring.unlocked{border-color:var(--orange);background:rgba(240,99,24,.15);}
+.ts-auto-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.ts-auto-badge.auto{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25);}
+.ts-auto-badge.manual{background:rgba(240,99,24,.12);color:var(--orange);border:1px solid rgba(240,99,24,.25);}
+.injury-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin-left:4px;}
+
+/* ── Misc ── */
+.danger-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px;margin-bottom:14px;}
+.month-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+select.fi option{background:#0c1828;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+/* Wizard */
+.wiz-step{display:none;}.wiz-step.active{display:block;}
+.wiz-tab{flex:1;padding:10px 4px;border:none;cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;background:transparent;color:var(--tm);border-bottom:2px solid transparent;transition:all .15s;}
+.wiz-tab.on{color:var(--orange);border-bottom-color:var(--orange);}
+.conv-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.conv-row:last-child{border-bottom:none;}
+.conv-row:active{background:rgba(255,255,255,.04);}
+.conv-cb{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0;transition:all .12s;}
+.conv-cb.on{background:var(--orange);border-color:var(--orange);color:white;}
+.riv-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);}
+.riv-row:last-child{border-bottom:none;}
+.riv-add-row{display:flex;gap:8px;padding:8px 14px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.content{animation:fadeIn .18s ease-out;}
+/* ── Matches ── */
+.qg4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.match-card{background:var(--s);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.match-card.win{border-left:4px solid #22c55e;}
+.match-card.loss{border-left:4px solid #ef4444;}
+.match-card.draw{border-left:4px solid #f59e0b;}
+.match-card.pending{border-left:4px solid var(--orange);}
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:14px 12px;background:var(--s2);border-radius:12px;margin-bottom:12px;}
+.sb-team{text-align:center;}
+.sb-name{font-family:var(--font-d);font-weight:800;font-size:15px;line-height:1.2;}
+.sb-badge{font-size:10px;color:var(--td);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-top:3px;}
+.sb-score{font-family:var(--font-d);font-weight:900;font-size:50px;line-height:1;text-align:center;}
+.sb-vs{font-family:var(--font-d);font-weight:900;font-size:16px;color:var(--tm);}
+.q-stepper{display:flex;align-items:center;gap:2px;justify-content:center;margin-bottom:3px;}
+.q-stepper:last-child{margin-bottom:0;}
+.q-stepper-val{font-family:var(--font-d);font-weight:900;font-size:16px;color:var(--tx);min-width:22px;text-align:center;line-height:1;cursor:pointer;}
+.q-stepper-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--s2);color:var(--tx);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding:0;position:relative;}
+.q-stepper-btn:active{background:var(--orange);border-color:var(--orange);color:white;opacity:1;}
+/* Extender área táctil a ~44px sin cambiar el visual — importante en Android */
+.q-stepper-btn::after{content:'';position:absolute;top:-11px;right:-11px;bottom:-11px;left:-11px;}
+/* Select con flecha custom — Android no aplica ::-webkit-appearance bien */
+.fi select,.fi{background-image:none;}
+select.fi{padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a9cc8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.loc-btn{flex:1;padding:9px 6px;border-radius:9px;border:1px solid var(--border);background:var(--s2);color:var(--td);font-size:12px;font-weight:700;cursor:pointer;text-align:center;}
+.loc-btn.on{background:rgba(240,99,24,.15);border-color:var(--orange);color:var(--orange);}
+.conv-player{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:10px;cursor:pointer;}
+.conv-player:last-child{border-bottom:none;}
+.conv-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;transition:all .15s;}
+.conv-check.on{background:var(--orange);border-color:var(--orange);}
+.result-pill{display:inline-block;padding:2px 10px;border-radius:8px;font-family:var(--font-d);font-weight:900;font-size:13px;}
+.result-pill.W{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);}
+.result-pill.L{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.25);}
+.result-pill.D{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.3);}
+.result-pill.P{background:rgba(240,99,24,.1);color:var(--orange);border:1px solid rgba(240,99,24,.2);}
+.season-bar{display:flex;gap:6px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;align-items:center;}
+.season-sv{font-family:var(--font-d);font-weight:900;font-size:22px;line-height:1;}
+.season-sl{font-size:10px;color:var(--td);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+/* ── Live Game ── */
+.live-header{background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(180,20,20,.1));border-bottom:1px solid rgba(239,68,68,.35);}
+/* Botón 📊 siempre visible, icon centrado */
+.live-stats-btn{display:flex!important;align-items:center;justify-content:center;}
+/* Stats inline siempre ocultas → se abren con el botón 📊 */
+.live-stats-wrap{display:none!important;}
+.live-scoreboard{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:16px 14px;margin-bottom:10px;text-align:center;}
+.live-score{font-family:var(--font-d);font-weight:900;font-size:62px;line-height:1;color:var(--tx);}
+.live-diff{font-size:14px;font-weight:800;padding:2px 10px;border-radius:8px;display:inline-block;margin:4px 0;}
+.qtab-btn{flex:1;padding:5px 2px;border-radius:8px;border:1px solid var(--border);background:var(--s2);color:var(--td);font-family:var(--font-d);font-weight:900;font-size:11px;cursor:pointer;text-align:center;}
+.qtab-btn.active{border-color:var(--orange);background:rgba(240,99,24,.2);color:var(--orange);}
+.live-player-btn{border-radius:10px;border:2px solid var(--border);background:var(--s2);padding:7px 4px;cursor:pointer;text-align:center;}
+.live-player-btn.sel{border-color:var(--orange);background:rgba(240,99,24,.15);}
+.live-player-btn.disq{opacity:.4;}
+.live-player-pts{font-family:var(--font-d);font-weight:900;font-size:19px;line-height:1;}
+.live-player-name{font-size:10px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:62px;margin:2px auto 0;}
+.live-player-fouls{font-size:11px;font-weight:800;min-height:14px;}
+.court-card{border-radius:12px;border:2px solid var(--border);background:var(--s2);padding:9px 4px;cursor:pointer;text-align:center;transition:border-color .12s,background .12s;}
+.court-card:active{transform:scale(.96);}
+.court-card.sel{border-color:var(--orange);background:rgba(240,99,24,.15);}
+.court-card.disq{opacity:.35;}
+.action-pad{background:var(--s2);border:1px solid rgba(240,99,24,.3);border-radius:14px;padding:12px;}
+.action-btn{padding:9px 2px;border-radius:9px;border:1px solid;font-size:11px;font-weight:800;cursor:pointer;line-height:1.3;text-align:center;}
+.stats-table{width:100%;border-collapse:collapse;font-size:11px;}
+.stats-table th{padding:5px 4px;font-size:9px;font-weight:700;color:var(--td);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;}
+.stats-table th:first-child,.stats-table th:nth-child(2){text-align:left;}
+.stats-table td{padding:5px 4px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04);}
+.stats-table td:first-child,.stats-table td:nth-child(2){text-align:left;}
+.stats-table tr.totrow td{background:var(--s2);}
+/* Sticky first 2 cols */
+.stats-table th:first-child,.stats-table td:first-child{position:sticky;left:0;z-index:3;background:var(--s);min-width:28px;}
+.stats-table th:nth-child(2),.stats-table td:nth-child(2){position:sticky;left:28px;z-index:3;background:var(--s);min-width:80px;max-width:100px;}
+.stats-table tr.totrow td:first-child,.stats-table tr.totrow td:nth-child(2){background:var(--s2);}
+/* Rotate hint */
+.rotate-hint{display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(249,115,22,.08);border:1px dashed rgba(249,115,22,.3);border-radius:8px;margin-bottom:8px;cursor:pointer;}
+@media (pointer:coarse) and (max-aspect-ratio:3/4){.rotate-hint{display:flex;}}
+/* Landscape live game overhaul */
+/* v1.8.24: el comportamiento "live game landscape = stats fullscreen"
+   ahora vive en el bloque @media (orientation:landscape) más abajo
+   (sin restricción max-height, así funciona también en tablet). */
+
+/* v1.8.24 · B-NEW-4: bloqueo visual de orientación landscape para
+   pantallas de gestión. Solo el live game permite landscape; en el
+   resto aparece un overlay "Gira el móvil". screen.orientation.lock()
+   no funciona en Safari iOS, así que usamos esta solución 100% CSS
+   que funciona en cualquier dispositivo. */
+#rotate-required-overlay{
+  display:none;position:fixed;inset:0;z-index:99998;background:var(--bg);
+  flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:32px 24px;color:#fff;
+  padding-top:calc(32px + env(safe-area-inset-top));
+  padding-bottom:calc(32px + env(safe-area-inset-bottom));
+}
+#rotate-required-overlay .rot-icon{
+  font-size:80px;margin-bottom:18px;
+  animation:rotateHint 2.4s ease-in-out infinite;transform-origin:center;
+}
+@keyframes rotateHint{
+  0%,40%{transform:rotate(0deg);}
+  60%,100%{transform:rotate(-90deg);}
+}
+#rotate-required-overlay .rot-title{
+  font-family:var(--font-d);font-size:22px;font-weight:900;
+  color:var(--orange);margin-bottom:10px;letter-spacing:.5px;
+}
+#rotate-required-overlay .rot-desc{
+  font-size:14px;color:var(--td);max-width:320px;line-height:1.5;
+}
+@media (orientation:landscape){
+  body:not(.in-live) #rotate-required-overlay{display:flex;}
+}
+
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media all and (display-mode:standalone){body{padding-top:0;}.header{padding-top:calc(14px + env(safe-area-inset-top));}}
+button,input,select,textarea{-webkit-user-select:auto;user-select:auto;}
+/* Touch targets y feedback táctil — crítico para Android */
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;}
+button:active{opacity:.75;}
+/* Inputs: quitar apariencia nativa solo para tipos de texto — NO tocar checkbox/radio en iOS */
+input[type="text"],input[type="number"],input[type="tel"],input[type="email"],input[type="password"],input[type="search"],input[type="url"],textarea{-webkit-appearance:none;appearance:none;}
+input[type="checkbox"],input[type="radio"]{-webkit-appearance:auto;appearance:auto;}
+input[type="time"],input[type="date"],input[type="datetime-local"],input[type="month"],input[type="week"]{-webkit-appearance:none;appearance:none;background-clip:padding-box;}
+select{-webkit-appearance:none;appearance:none;}
+/* font-size 16px en TODOS los inputs interactivos para evitar zoom autom\u00e1tico en iOS */
+input[type="text"],input[type="number"],input[type="tel"],input[type="email"],input[type="password"],input[type="search"],input[type="url"],input[type="time"],input[type="date"],input[type="datetime-local"],input[type="month"],input[type="week"],select,textarea{font-size:16px!important;}
+/* iOS time/date: asegurar alineaci\u00f3n visual = \u00e1rea t\u00e1ctil */
+input[type="time"],input[type="date"],input[type="datetime-local"]{min-height:40px;line-height:normal;text-align:left;}
+input[type="time"]::-webkit-calendar-picker-indicator,input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.6;cursor:pointer;}
+input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date-and-time-value{text-align:left;padding:0;}
+/* checkbox: tama\u00f1o t\u00e1ctil c\u00f3modo en todos los dispositivos */
+input[type="checkbox"]{min-width:20px;min-height:20px;cursor:pointer;}
+.modal{-webkit-overflow-scrolling:touch;}
+.content{-webkit-overflow-scrolling:touch;}
+/* Eliminar highlight azul en toque sobre labels en iOS */
+label{-webkit-tap-highlight-color:transparent;}
+
+/* ════════════════════════════════════════════════════════════
+   v1.8.24 — Decisión arquitectónica:
+   La app es 100% mobile-first. Las pantallas de gestión (home,
+   asistencia, equipos, jugadores, partidos, stats) se ven SIEMPRE
+   a 430px max-width centrado, en cualquier dispositivo y
+   orientación. Solo el LIVE GAME aprovecha el viewport extra
+   cuando se gira el móvil/tablet (ver bloque @media landscape
+   más abajo).
+
+   Razón: el coach gira el móvil cuando está en banda viendo el
+   partido, no cuando configura la convocatoria. Mantener tablet
+   responsive para gestión añadía bugs (B-NEW-2 phone landscape) sin
+   aportar valor real al usuario. Las reglas que vivían en
+   @media (min-width: 600/768/1024px) han sido eliminadas a
+   propósito en v1.8.24.
+════════════════════════════════════════════════════════════ */
+
+/* ─── LIVE GAME · LANDSCAPE (≥700px landscape) ──────────────────────────
+   Solo el live game escala con la orientación. El resto de pantallas
+   sigue a 430px centradas (ver decisión arquitectónica v1.8.24 arriba).
+   Para que `.live-game-content` pueda crecer hasta 1100 necesitamos que
+   su padre `#root` se libere del límite de 430px en landscape, pero el
+   resto de containers (.header, .content normal, .nav, .modal) se
+   mantienen explícitamente centrados a 430px para que sólo el live se
+   beneficie. */
+@media (min-width:700px) and (orientation:landscape){
+  #root{max-width:100%;}
+  .header{max-width:430px;margin-left:auto;margin-right:auto;}
+  .content{max-width:430px;margin-left:auto;margin-right:auto;}
+  /* En landscape solo el .stats-content (pantalla de estadísticas globales)
+     aprovecha el ancho extra. El live game NO se reorganiza en landscape:
+     ver bloque body.in-live abajo (modo lectura de stats fullscreen). */
+  .stats-content{max-width:960px!important;}
+  .stats-table{font-size:13px;}
+  .stats-table th{font-size:11px;padding:7px 7px;}
+  .stats-table td{padding:8px 7px;}
+  .live-rotate-hint{display:none;}
+}
+
+/* v1.8.24 · LIVE GAME LANDSCAPE — Modo lectura de stats fullscreen:
+   La app es 100% mobile-first vertical. El live game (registrar acciones,
+   sustituir, marcador) es solo en vertical. Cuando el coach gira el
+   móvil estando en live game, en lugar de reorganizar toda la operativa
+   se muestra automáticamente la tabla de estadísticas a pantalla completa
+   como modo lectura — útil para mirar cómo va el partido de un vistazo
+   con todas las columnas visibles. Al volver a vertical se cierra solo.
+   En cualquier otra pantalla de gestión se ve el overlay "Gira el móvil"
+   (B-NEW-4) — ahí no tiene sentido el modo horizontal.
+
+   Comportamiento heredado de v1.8.0; reintroducido en v1.8.24 tras el
+   intento fallido de "live game horizontal operativo" en v1.8.23. */
+@media (orientation:landscape){
+  body.in-live{overflow:hidden;}
+  body.in-live #root{max-width:100%;height:100dvh;}
+  body.in-live .header,
+  body.in-live .nav,
+  body.in-live .live-scoreboard-wrap,
+  body.in-live .live-col-r{display:none!important;}
+  body.in-live .live-game-content{padding:0!important;max-width:none!important;}
+  /* La tabla de stats inline (.live-stats-wrap) está marcada display:none
+     en portrait. En landscape la promovemos a overlay fullscreen. */
+  body.in-live .live-stats-wrap{
+    display:block!important;
+    position:fixed;inset:0;z-index:500;
+    background:var(--bg);overflow-y:auto;overflow-x:auto;
+    padding:14px 12px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+  }
+  body.in-live .live-rotate-hint{display:none;}
+  /* Tabla compacta para que quepan más columnas */
+  body.in-live .live-stats-wrap .stats-table{font-size:11px;}
+  body.in-live .live-stats-wrap .stats-table th{font-size:9px;padding:5px 4px;}
+  body.in-live .live-stats-wrap .stats-table td{padding:5px 4px;}
+}
+
+/* v1.8.24: bloques @media (min-width: 768/1024) eliminados a propósito.
+   Ver decisión arquitectónica arriba. La gestión vive en mobile-first;
+   solo el live game escala con la orientación. */
+
+/* v1.8.24: bloque @media (min-width:700px) landscape min-height:501px
+   eliminado a propósito. Era para Fase 3 tablet landscape live game con
+   marcador 54px, court cards más grandes, etc. — pero el live game ya
+   no se reorganiza en landscape (ver bloque body.in-live arriba). */
