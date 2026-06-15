@@ -5544,112 +5544,67 @@ function liveGame(){
   ];
   // v1.7.2 · Banner de acciones siempre visible (modo banco).
   // Cada botón llama a openActionPicker(action, pts) que abre el modal "¿quién?".
-  const actionBlock=`
-    <div style="border:1px solid rgba(240,99,24,.35);border-radius:14px;overflow:hidden;margin-bottom:8px">
-      <!-- Header del banner -->
-      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(240,99,24,.1);border-bottom:1px solid rgba(240,99,24,.25)">
-        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange)">⚡ Acciones</div>
-        <div style="font-size:11px;color:var(--td);flex:1;text-align:right">Toca una acción · luego elige el jugador</div>
+  const actionBlock=(()=>{
+    const tf=teamFouls;
+    const bonusBadge=tf>=5
+      ?`<span style="background:rgba(34,197,94,.2);color:#22c55e;border:1px solid rgba(34,197,94,.5);border-radius:5px;font-size:10px;font-weight:800;padding:2px 7px">BONUS</span>`
+      :tf>=4
+      ?`<span style="background:rgba(245,158,11,.2);color:#f59e0b;border:1px solid rgba(245,158,11,.4);border-radius:5px;font-size:10px;font-weight:800;padding:2px 7px">F:4 ⚠️</span>`
+      :`<span style="background:var(--s3);color:var(--td);border:1px solid var(--border);border-radius:5px;font-size:10px;font-weight:600;padding:2px 7px">F.equipo: ${tf}/4</span>`;
+    const grpStyle="border:1px solid var(--border);border-radius:12px;padding:8px 8px 6px;margin-bottom:7px;background:var(--s2)";
+    const grpLabel=(txt,col)=>`<div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${col};margin-bottom:6px">${txt}</div>`;
+    const ab=(label,sub,action,pts,col,bg)=>`<button class="action-btn" onclick="openActionPicker('${action}',${pts})" style="border-color:${col}66;background:${bg};color:${col};padding:9px 3px">
+      <div style="font-size:15px;font-weight:900;line-height:1.1">${label}</div>
+      <div style="font-size:9px;margin-top:2px;opacity:.85">${sub}</div>
+    </button>`;
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--td)">Acción → Jugador</div>
+        ${bonusBadge}
       </div>
-      <!-- Puntos -->
-      <div style="padding:10px 10px 8px;border-bottom:1px solid var(--border)">
-        <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#22c55e;margin-bottom:7px">⚡ PUNTOS</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px">
-          <button class="action-btn" onclick="openActionPicker('p2m',2)" style="border-color:#22c55e88;background:#22c55e20;color:#22c55e;padding:10px 4px">
-            <div style="font-family:var(--font-d);font-size:24px;font-weight:900;line-height:1">+2</div>
-            <div style="font-size:10px;margin-top:2px">Canasta</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('p3m',3)" style="border-color:#22c55e88;background:#22c55e20;color:#22c55e;padding:10px 4px">
-            <div style="font-family:var(--font-d);font-size:24px;font-weight:900;line-height:1">+3</div>
-            <div style="font-size:10px;margin-top:2px">Triple</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('p1m',1)" style="border-color:#22c55e88;background:#22c55e20;color:#22c55e;padding:10px 4px">
-            <div style="font-family:var(--font-d);font-size:24px;font-weight:900;line-height:1">+1</div>
-            <div style="font-size:10px;margin-top:2px">Tiro Libre</div>
-          </button>
+      <div style="${grpStyle}">
+        ${grpLabel("🏀 Puntos anotados","#22c55e")}
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:5px">
+          ${ab("+2","Canasta","p2m",2,"#22c55e","rgba(34,197,94,.12)")}
+          ${ab("+3","Triple","p3m",3,"#22c55e","rgba(34,197,94,.12)")}
+          ${ab("+1 TL","Tiro libre","p1m",1,"#22c55e","rgba(34,197,94,.08)")}
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-          <button class="action-btn" onclick="openActionPicker('p2a',0)" style="border-color:#ef444455;background:#ef444412;color:#ef4444;padding:7px 4px">
-            <div style="font-size:16px;font-weight:900">✗ 2</div>
-            <div style="font-size:10px;margin-top:1px;opacity:.8">Fallo 2pt</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('p3a',0)" style="border-color:#ef444455;background:#ef444412;color:#ef4444;padding:7px 4px">
-            <div style="font-size:16px;font-weight:900">✗ 3</div>
-            <div style="font-size:10px;margin-top:1px;opacity:.8">Fallo 3pt</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('p1a',0)" style="border-color:#ef444455;background:#ef444412;color:#ef4444;padding:7px 4px">
-            <div style="font-size:16px;font-weight:900">✗ TL</div>
-            <div style="font-size:10px;margin-top:1px;opacity:.8">Fallo TL</div>
-          </button>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+          ${ab("✗ 2","Fallo 2pt","p2a",0,"#ef4444","rgba(239,68,68,.08)")}
+          ${ab("✗ 3","Fallo 3pt","p3a",0,"#ef4444","rgba(239,68,68,.08)")}
+          ${ab("✗ TL","Fallo TL","p1a",0,"#ef4444","rgba(239,68,68,.08)")}
         </div>
       </div>
-      <!-- Rebotes -->
-      <div style="padding:10px 10px 8px;border-bottom:1px solid var(--border)">
-        <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#a855f7;margin-bottom:7px">📦 REBOTES</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <button class="action-btn" onclick="openActionPicker('ro',0)" style="border-color:#a855f755;background:#a855f712;color:#a855f7;padding:9px 4px">
-            <div style="font-size:16px;font-weight:900">OF</div>
-            <div style="font-size:10px;margin-top:2px">Ofensivo</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('rd',0)" style="border-color:#6b728055;background:#6b728012;color:#9ca3af;padding:9px 4px">
-            <div style="font-size:16px;font-weight:900">DEF</div>
-            <div style="font-size:10px;margin-top:2px">Defensivo</div>
-          </button>
+      <div style="${grpStyle}">
+        ${grpLabel("📦 Rebotes","#a855f7")}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+          ${ab("R.OF","Ofensivo","ro",0,"#a855f7","rgba(168,85,247,.1)")}
+          ${ab("R.DEF","Defensivo","rd",0,"#9ca3af","rgba(107,114,128,.08)")}
         </div>
       </div>
-      <!-- Otros -->
-      <div style="padding:10px 10px 10px">
-        <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#06b6d4;margin-bottom:7px">🎯 OTROS</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
-          <button class="action-btn" onclick="openActionPicker('ast',0)" style="border-color:#06b6d455;background:#06b6d412;color:#06b6d4;padding:8px 2px">
-            <div style="font-size:15px;font-weight:900">AST</div>
-            <div style="font-size:9px;margin-top:2px">Asist</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('stl',0)" style="border-color:#3b82f655;background:#3b82f612;color:#3b82f6;padding:8px 2px">
-            <div style="font-size:15px;font-weight:900">ROB</div>
-            <div style="font-size:9px;margin-top:2px">Robo</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('blk',0)" style="border-color:#8b5cf655;background:#8b5cf612;color:#8b5cf6;padding:8px 2px">
-            <div style="font-size:15px;font-weight:900">TAP</div>
-            <div style="font-size:9px;margin-top:2px">Tapón</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('to',0)" style="border-color:#ef444455;background:#ef444412;color:#ef4444;padding:8px 2px">
-            <div style="font-size:15px;font-weight:900">PER</div>
-            <div style="font-size:9px;margin-top:2px">Pérdida</div>
-          </button>
+      <div style="${grpStyle}">
+        ${grpLabel("🎯 Juego","#06b6d4")}
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
+          ${ab("AST","Asistencia","ast",0,"#06b6d4","rgba(6,182,212,.08)")}
+          ${ab("ROB","Robo","stl",0,"#3b82f6","rgba(59,130,246,.08)")}
+          ${ab("TAP","Tapón","blk",0,"#8b5cf6","rgba(139,92,246,.08)")}
+          ${ab("PER","Pérdida","to",0,"#ef4444","rgba(239,68,68,.08)")}
         </div>
       </div>
-      <!-- 🤚 FALTAS -->
-      <div style="padding:10px 10px 10px;border-top:1px solid var(--border);background:rgba(245,158,11,.04)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
-          <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#f59e0b">🤚 Faltas</div>
-          ${(()=>{
-            const tf=teamFouls;
-            if(tf>=5)return`<span style="background:rgba(34,197,94,.18);color:#22c55e;border:1px solid rgba(34,197,94,.45);border-radius:6px;font-size:10px;font-weight:800;padding:2px 7px">F:${tf} · BONUS</span>`;
-            if(tf===4)return`<span style="background:rgba(245,158,11,.2);color:#f59e0b;border:1px solid rgba(245,158,11,.4);border-radius:6px;font-size:10px;font-weight:800;padding:2px 7px">F:4/4 · PRÓX BONUS</span>`;
-            return`<span style="background:var(--s3);color:var(--td);border:1px solid var(--border);border-radius:6px;font-size:10px;font-weight:700;padding:2px 7px">F:${tf}/4</span>`;
-          })()}
+      <div style="border:1px solid rgba(245,158,11,.35);border-radius:12px;padding:8px 8px 6px;margin-bottom:7px;background:rgba(245,158,11,.04)">
+        ${grpLabel("🤚 Faltas cometidas","#f59e0b")}
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:5px">
+          ${ab("Personal","5ª = expulsado","foul",0,"#f59e0b","rgba(245,158,11,.1)")}
+          ${ab("F.Recibida","foul recibida","frecv",0,"#0ea5e9","rgba(14,165,233,.08)")}
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
-          <button class="action-btn" onclick="openActionPicker('foul',0)" style="border-color:#f59e0b66;background:#f59e0b14;color:#f59e0b;padding:10px 4px" title="Falta personal">
-            <div style="font-size:15px;font-weight:900">FALT</div>
-            <div style="font-size:9px;margin-top:2px">Personal</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('ftech',0)" style="border-color:#ef444488;background:#ef444418;color:#ef4444;padding:10px 4px" title="Técnica — 1 TL + posesión">
-            <div style="font-size:15px;font-weight:900">TÉC</div>
-            <div style="font-size:9px;margin-top:2px">Técnica</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('funsport',0)" style="border-color:#ef444488;background:#ef444418;color:#ef4444;padding:10px 4px" title="Antideportiva — 2 TL + posesión">
-            <div style="font-size:15px;font-weight:900">ANT</div>
-            <div style="font-size:9px;margin-top:2px">Antidep.</div>
-          </button>
-          <button class="action-btn" onclick="openActionPicker('fdq',0)" style="border-color:#dc2626;background:#dc262625;color:#fca5a5;padding:10px 4px" title="Descalificante — expulsión inmediata">
-            <div style="font-size:15px;font-weight:900">DESC</div>
-            <div style="font-size:9px;margin-top:2px">Descalif.</div>
-          </button>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
+          ${ab("Técnica","2ª = expulsado","ftech",0,"#ef4444","rgba(239,68,68,.1)")}
+          ${ab("Antidep.","2ª = expulsado","funsport",0,"#ef4444","rgba(239,68,68,.1)")}
+          ${ab("Descal.","Expulsión directa","fdq",0,"#dc2626","rgba(220,38,38,.15)")}
         </div>
       </div>
     </div>`;
+  })();
 
   // BENCH
   const benchCards=benchP.length===0?"":
@@ -6446,33 +6401,82 @@ function openActionPicker(action,pts){
   const m=mById(S.teamId,S.matchId);if(!m||!m.live)return;
   document.getElementById("m-actpicker")?.remove();
   const players=pl(S.teamId);
-  const onCourt=m.live.onCourt||[];
-  const courtP=onCourt.map(id=>players.find(x=>x.id===id)).filter(Boolean);
+  const isRivalTeam=m.live.activeTeam==="rival";
+  const onCourt=isRivalTeam?(m.live.rivalOnCourt||[]):(m.live.onCourt||[]);
+  const playerPool=isRivalTeam?(m.rivalPlayers||[]):players;
+  const courtP=onCourt.map(id=>playerPool.find(x=>x.id===id)).filter(Boolean);
   const meta=_ACTION_LABELS[action]||{txt:action,emoji:"·",color:"var(--tx)"};
   const t=S.teams.find(x=>x.id===S.teamId);
-  const teamColor=t?.color||"#F06318";
+  const teamColor=isRivalTeam?"#ef4444":(t?.color||"#F06318");
+  const isFoulAction=["foul","ftech","funsport","fdq"].includes(action);
 
   const cards=courtP.map(p=>{
-    const st=m.live.stats?.[p.id]||{};
-    const pts2=(st.p1m||0)+(st.p2m||0)*2+(st.p3m||0)*3;
-    return `<button onclick="_pickActionFor('${p.id}','${action}',${pts||0})" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;border-radius:12px;border:2px solid ${meta.color}55;background:rgba(0,0,0,.25);color:var(--tx);cursor:pointer;font-family:inherit;width:100%">
-      <div style="width:40px;height:40px;border-radius:9px;background:linear-gradient(135deg,${teamColor},${teamColor}88);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:white">${p.number||"?"}</div>
-      <div style="font-weight:800;font-size:13px;text-align:center;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis">${esc(_shortName(p.name))}</div>
-      <div style="font-size:10px;color:var(--td)">${pts2} pts</div>
+    const st=(isRivalTeam?(m.live.rivalStats||{}):(m.live.stats||{}))[p.id]||{};
+    const pPts=(st.p1m||0)+(st.p2m||0)*2+(st.p3m||0)*3;
+    const fouls=_totalFouls(st);
+    const dq=_isDQ(st);
+    const f4=fouls===4&&!dq;
+    const ftech=st.ftech||0;
+    const funsport=st.funsport||0;
+
+    // Color del borde según estado de faltas
+    let borderCol=meta.color+"55";
+    let cardBg="rgba(0,0,0,.22)";
+    let opacity="1";
+    let foulLabel="";
+    let foulLabelColor="#9ca3af";
+    if(dq){
+      borderCol="#ef444488";cardBg="rgba(239,68,68,.08)";opacity="0.45";
+      foulLabel="EXPULSADO";foulLabelColor="#ef4444";
+    } else if(f4&&isFoulAction){
+      borderCol="#f59e0b99";cardBg="rgba(245,158,11,.12)";
+      foulLabel="⚠️ 4ª falta — 5ª = EXPULSADO";foulLabelColor="#f59e0b";
+    } else if(fouls>0){
+      const dots="●".repeat(fouls);
+      const fcolor=f4?"#f59e0b":"#6b7280";
+      foulLabel=`<span style="color:${fcolor}">${dots}</span>`;
+    }
+
+    // Info de faltas especiales para el popup
+    let extraInfo="";
+    if(ftech===1&&!dq) extraInfo=`<div style="font-size:9px;color:#ef4444;font-weight:700;margin-top:1px">1 TÉC — 2ª = exp.</div>`;
+    else if(funsport===1&&!dq) extraInfo=`<div style="font-size:9px;color:#ef4444;font-weight:700;margin-top:1px">1 ANT — 2ª = exp.</div>`;
+
+    const clickAttr=dq?"":`onclick="_pickActionFor('${p.id}','${action}',${pts||0})"`;
+    const cursor=dq?"not-allowed":"pointer";
+
+    return `<button ${clickAttr} style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 4px;border-radius:12px;border:2px solid ${borderCol};background:${cardBg};color:var(--tx);cursor:${cursor};font-family:inherit;width:100%;opacity:${opacity}">
+      <div style="width:38px;height:38px;border-radius:9px;background:${teamColor};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:white">${p.number||"?"}</div>
+      <div style="font-weight:800;font-size:12px;text-align:center;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;padding:0 2px">${esc(_shortName(p.name))}</div>
+      <div style="font-size:13px;font-weight:900;color:var(--tx)">${pPts} pts</div>
+      <div style="font-size:10px;min-height:13px;text-align:center;color:${foulLabelColor}">${foulLabel}</div>
+      ${extraInfo}
     </button>`;
   }).join("");
 
+  // Descripción de la acción para foul types
+  const foulDescMap={
+    foul:`<div style="font-size:11px;color:#f59e0b;margin-top:4px">5ª falta personal = expulsión</div>`,
+    ftech:`<div style="font-size:11px;color:#ef4444;margin-top:4px">2ª técnica = expulsión · 1 TL + posesión</div>`,
+    funsport:`<div style="font-size:11px;color:#ef4444;margin-top:4px">2ª antidep. = expulsión · 2 TL + posesión<br>1 antidep. + 1 técnica = expulsión</div>`,
+    fdq:`<div style="font-size:11px;color:#dc2626;margin-top:4px;font-weight:700">Expulsión inmediata · 2 TL + posesión</div>`
+  };
+
   const el=document.createElement("div");
   el.id="m-actpicker";
-  el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(7,15,30,.96);z-index:9997;display:flex;align-items:center;justify-content:center;padding:20px;";
+  el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(7,15,30,.96);z-index:9997;display:flex;align-items:flex-end;justify-content:center;padding:0;";
   el.onclick=e=>{if(e.target===el)el.remove();};
-  el.innerHTML=`<div style="width:100%;max-width:380px">
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${meta.color};margin-bottom:6px">${meta.emoji} ${meta.txt}</div>
-      <div style="font-family:var(--font-d);font-weight:900;font-size:18px;color:var(--tx)">¿Quién?</div>
+  el.innerHTML=`<div style="width:100%;max-width:420px;background:var(--s);border-radius:18px 18px 0 0;padding:20px 16px 28px;border-top:1px solid var(--border)">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:${meta.color}22;border:1px solid ${meta.color}55;border-radius:8px;padding:5px 14px;margin-bottom:8px">
+        <span style="font-size:14px;font-weight:900;color:${meta.color}">${meta.emoji} ${meta.txt}</span>
+      </div>
+      <div style="font-size:16px;font-weight:900;color:var(--tx)">¿Quién?</div>
+      ${foulDescMap[action]||""}
     </div>
-    <div style="display:grid;grid-template-columns:repeat(${Math.min(courtP.length,5)},1fr);gap:7px;margin-bottom:14px">${cards}</div>
-    <button class="btn-s" onclick="document.getElementById('m-actpicker').remove()" style="width:100%">Cancelar</button>
+    <div style="display:grid;grid-template-columns:repeat(${Math.min(courtP.length||1,5)},1fr);gap:6px;margin-bottom:14px">${cards||'<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--tm);font-size:13px">Sin jugadores en pista</div>'}</div>
+    <button onclick="document.getElementById('m-actpicker').remove()" style="width:100%;padding:13px;border-radius:10px;border:1px solid var(--border);background:var(--s2);color:var(--td);cursor:pointer;font-size:14px;font-weight:700">Cancelar</button>
   </div>`;
   document.body.appendChild(el);
 }
