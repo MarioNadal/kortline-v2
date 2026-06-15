@@ -8272,6 +8272,7 @@ function _confirm(msg, confirmLabel, onConfirm){
 }
 
 load();
+if(new URLSearchParams(location.search).get("demo")!==null){loadDemoData();}
 // v1.8.24 · B-NEW-1: si sólo hay un equipo, autoasignar `S.teamId` antes
 // del primer render. Antes la autoasignación sólo ocurría al entrar a Stats
 // (helper viewTeams), por lo que tras recargar la PWA con un único equipo,
