@@ -4253,15 +4253,22 @@ function openCropModal(dataUrl,onConfirm,onCancel){
   var canvas=document.getElementById('cropCanvas');
   var ctx=canvas.getContext('2d');
   var img=new Image();
-  var ox=0,oy=0,sc=1,drag=false,lx=0,ly=0,ld=0;
+  var ox=0,oy=0,sc=1,minSc=1;
+  var drag=false,lx=0,ly=0,ld=0;
   img.onload=function(){
-    var mn=Math.min(img.naturalWidth,img.naturalHeight);
-    sc=260/mn;
+    minSc=Math.max(260/img.naturalWidth,260/img.naturalHeight);
+    sc=minSc*1.05;
     ox=(260-img.naturalWidth*sc)/2;
     oy=(260-img.naturalHeight*sc)/2;
-    draw();
+    clamp();draw();
   };
   img.src=dataUrl;
+  function clamp(){
+    if(sc<minSc){var r0=minSc/sc;ox=130-(130-ox)*r0;oy=130-(130-oy)*r0;sc=minSc;}
+    var iw=img.naturalWidth*sc,ih=img.naturalHeight*sc;
+    if(ox>0)ox=0;if(oy>0)oy=0;
+    if(ox+iw<260)ox=260-iw;if(oy+ih<260)oy=260-ih;
+  }
   function draw(){
     ctx.clearRect(0,0,260,260);
     ctx.save();
@@ -4271,25 +4278,46 @@ function openCropModal(dataUrl,onConfirm,onCancel){
     ctx.beginPath();ctx.arc(130,130,128,0,Math.PI*2);
     ctx.strokeStyle='#F06318';ctx.lineWidth=3;ctx.stroke();
   }
-  canvas.onmousedown=function(e){drag=true;lx=e.clientX;ly=e.clientY;};
-  var mm=function(e){if(!drag)return;ox+=e.clientX-lx;oy+=e.clientY-ly;lx=e.clientX;ly=e.clientY;draw();};
+  canvas.onmousedown=function(e){drag=true;lx=e.clientX;ly=e.clientY;e.preventDefault();};
+  var mm=function(e){
+    if(!drag)return;
+    ox+=e.clientX-lx;oy+=e.clientY-ly;
+    lx=e.clientX;ly=e.clientY;
+    clamp();draw();
+  };
   var mu=function(){drag=false;};
   document.addEventListener('mousemove',mm);
   document.addEventListener('mouseup',mu);
   canvas.onwheel=function(e){
     e.preventDefault();
-    var d=e.deltaY>0?.9:1.1;
-    sc*=d;ox=130-(130-ox)*d;oy=130-(130-oy)*d;draw();
+    var delta=e.deltaY>0?0.92:1.08;
+    var ns=Math.max(sc*delta,minSc);
+    var ratio=ns/sc;
+    ox=130-(130-ox)*ratio;oy=130-(130-oy)*ratio;sc=ns;
+    clamp();draw();
   };
   canvas.ontouchstart=function(e){
     e.preventDefault();
     if(e.touches.length===1){drag=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}
-    else if(e.touches.length===2){ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+    else if(e.touches.length===2){drag=false;ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
   };
   canvas.ontouchmove=function(e){
     e.preventDefault();
-    if(e.touches.length===1&&drag){ox+=e.touches[0].clientX-lx;oy+=e.touches[0].clientY-ly;lx=e.touches[0].clientX;ly=e.touches[0].clientY;draw();}
-    else if(e.touches.length===2&&ld>0){var d2=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);var r=d2/ld;sc*=r;ox=130-(130-ox)*r;oy=130-(130-oy)*r;ld=d2;draw();}
+    if(e.touches.length===1&&drag){
+      ox+=e.touches[0].clientX-lx;oy+=e.touches[0].clientY-ly;
+      lx=e.touches[0].clientX;ly=e.touches[0].clientY;
+      clamp();draw();
+    }else if(e.touches.length===2&&ld>0){
+      var dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      var r=dist/ld;
+      var ns2=Math.max(sc*r,minSc);
+      var ratio2=ns2/sc;
+      var rect=canvas.getBoundingClientRect();
+      var mx=((e.touches[0].clientX+e.touches[1].clientX)/2)-rect.left;
+      var my=((e.touches[0].clientY+e.touches[1].clientY)/2)-rect.top;
+      ox=mx-(mx-ox)*ratio2;oy=my-(my-oy)*ratio2;sc=ns2;ld=dist;
+      clamp();draw();
+    }
   };
   canvas.ontouchend=function(){drag=false;ld=0;};
   function cleanup(){document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);}
@@ -4299,7 +4327,7 @@ function openCropModal(dataUrl,onConfirm,onCancel){
     var octx=out.getContext('2d');
     octx.beginPath();octx.arc(130,130,130,0,Math.PI*2);octx.clip();
     octx.drawImage(img,ox,oy,img.naturalWidth*sc,img.naturalHeight*sc);
-    onConfirm(out.toDataURL('image/jpeg',.85));
+    onConfirm(out.toDataURL('image/jpeg',.88));
   };
   document.getElementById('cropCancel').onclick=function(){
     modal.classList.remove('active');cleanup();if(onCancel)onCancel();
