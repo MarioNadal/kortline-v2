@@ -6593,7 +6593,7 @@ function liveGame(){
   const _rivTMrow=_tmLimit>0
     ?'<div style="display:flex;align-items:center;justify-content:flex-end;gap:2px;margin-top:4px">'
       +_tmDots(_rivTMused,_tmLimit,"#ef4444")
-      +'<span style="font-size:9px;font-weight:700;color:var(--td);min-width:26px;text-align:right;text-transform:uppercase">T.M.</span></div>':"";
+      +'<span style="font-size:9px;font-weight:700;color:var(--td);min-width:26px;text-align:center;text-transform:uppercase">T.M.</span></div>':"";
 
   const _ourName=esc(t.name.length>12?t.name.slice(0,11)+"…":t.name);
   const _rivName=esc((m.rival||"Rival").length>12?(m.rival||"Rival").slice(0,11)+"…":(m.rival||"Rival"));
