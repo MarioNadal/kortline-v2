@@ -3633,22 +3633,31 @@ function eventos(){
   <div class="content">${content}</div>
   ${navBar()}`;
 }
-function buildEventoText(tid,eid){
+function buildEventoText(tid,eid,opts){
+  const {showCoach=true,showAsst=true}=opts||{};
   const t=S.teams.find(x=>x.id===tid);const e=evtById(tid,eid);if(!t||!e)return"";
   const players=pl(tid);
   const convP=players.filter(p=>(e.convocados||[]).includes(p.id)).sort((a,b)=>(a.number||99)-(b.number||99));
-  const abrev=(S.clubAbrev||S.clubName||"CLUB").toUpperCase();
+  const realClub=S.clubName&&S.clubName!=="Kortline"?S.clubName:"";
+  const abrev=(S.clubAbrev||realClub||t.name||"CLUB").toUpperCase();
   const lema=S.clubLema||"";
   const typeLabel=e.tipo==="partido"?"PARTIDO":e.tipo==="tecnificacion"?"TECNIFICACIÓN":"EVENTO";
   const lines=[`🏀 ${abrev} — ${typeLabel}`,"━━━━━━━━━━━━━━━━━━━━━"];
+  lines.push(`👥 ${t.name}`);
   if(e.fecha)lines.push(`📅 ${cap(fd(e.fecha,true))}${e.hora?" · 🕐 "+e.hora+"h":""}`);
   if(e.lugar)lines.push(`📍 ${e.lugar}`);
   if(e.horaConc)lines.push(`⏰ Concentración: ${e.horaConc}h`);
   if(e.tipo==="partido"&&e.rival)lines.push(`🆚 ${e.rival}`);
+  const allCoaches=(t.coaches||[]).filter(Boolean);
+  const headCoach=allCoaches[0]||null;
+  const assistants=allCoaches.slice(1);
+  if(showCoach&&headCoach)lines.push(`👟 ${headCoach}`);
+  if(showAsst&&assistants.length)lines.push(`👟 Ayudante${assistants.length>1?"s":""}: ${assistants.join(", ")}`);
   if(convP.length){lines.push(`\n*CONVOCADOS (${convP.length}):*`);convP.forEach((p,i)=>lines.push(`${i+1}. ${p.name}${p.number?" — #"+p.number:""}`));}
   if(e.mensaje)lines.push(`\n💬 ${e.mensaje}`);
   if(lema)lines.push(`\n${lema}`);
-  lines.push(`\n_${S.clubName}_`);
+  const footerName=realClub||t.name;
+  lines.push(`\n_${footerName}_`);
   return lines.join("\n");
 }
 function _refreshEvtPrev(){
