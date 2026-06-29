@@ -3575,12 +3575,12 @@ function _refreshSharePrevs(){
 }
 function shareScreen(){
   const t=S.teams.find(x=>x.id===S.teamId);
-  const _noCoach={coachNames:[]};
-  const dayP=buildDailyText(S.teamId,S.date,false,_noCoach);
-  const dayI=buildDailyText(S.teamId,S.date,true,_noCoach);
-  const wkP=buildWeeklyText(S.teamId,false,_noCoach);
-  const wkI=buildWeeklyText(S.teamId,true,_noCoach);
   const allCoaches=(t?.coaches||[]).filter(Boolean);
+  const _initCoach={coachNames:allCoaches.slice(0,1)};
+  const dayP=buildDailyText(S.teamId,S.date,false,_initCoach);
+  const dayI=buildDailyText(S.teamId,S.date,true,_initCoach);
+  const wkP=buildWeeklyText(S.teamId,false,_initCoach);
+  const wkI=buildWeeklyText(S.teamId,true,_initCoach);
   const hasCoach=allCoaches.length>0;
   const hasAsst=allCoaches.length>1;
   const togBar=_coachToggleHtml(allCoaches,"share","_refreshSharePrevs");
@@ -3687,12 +3687,12 @@ function buildEventoText(tid,eid,opts){
   return lines.join("\n");
 }
 function _coachToggleHtml(coaches,prefix,onChange){
-  const head=coaches[0];if(!head)return"";
-  return`<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="${prefix+"-c-0"}" onchange="${onChange}()" style="accent-color:var(--orange);width:16px;height:16px"/><span style="font-size:13px">👟 ${head}</span></label></div>`;
+  if(!coaches||!coaches.length)return"";
+  return coaches.map((c,i)=>`<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="${prefix+"-c-"+i}" onchange="${onChange}()"${i===0?" checked":""} style="accent-color:var(--orange);width:16px;height:16px"/><span style="font-size:13px">👟 ${c}</span></label></div>`).join("");
 }
 function _getSelectedCoaches(coaches,prefix){
-  const head=coaches[0];if(!head)return[];
-  return document.getElementById(prefix+"-c-0")?.checked?[head]:[];
+  if(!coaches||!coaches.length)return[];
+  return coaches.filter((c,i)=>document.getElementById(prefix+"-c-"+i)?.checked);
 }
 
 function _refreshEvtPrev(){
@@ -3709,7 +3709,7 @@ function shareEventoConv(){
   const allCoaches=(t?.coaches||[]).filter(Boolean);
   const hasCoach=allCoaches.length>0;
   const hasAsst=allCoaches.length>1;
-  const text=buildEventoText(S.teamId,eid,{coachNames:[]});
+  const text=buildEventoText(S.teamId,eid,{coachNames:allCoaches.slice(0,1)});
   document.getElementById("m-share-evento")?.remove();
   const el=document.createElement("div");el.id="m-share-evento";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
@@ -3862,7 +3862,7 @@ function shareMatchResult(){
   const hasCoachSR=allCoachesSR.length>0;const hasAsstSR=allCoachesSR.length>1;
   const srTog=_coachToggleHtml(allCoachesSR,"sr","_refreshSRPrev");
   el.innerHTML=`<div class="modal"><div class="mhandle"></div><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:40px;height:40px;border-radius:10px;background:${resColor}22;border:1px solid ${resColor}44;display:flex;align-items:center;justify-content:center;font-size:20px">${isLive?"🔴":r==="W"?"🏆":r==="L"?"❌":r==="D"?"🤝":"📊"}</div><div><div class="mtitle" style="margin:0 0 2px">${isLive?"Marcador en vivo":"Compartir resultado"}</div><div style="font-size:12px;color:var(--td)">${esc(t.name)} vs ${esc(m.rival||"Rival")}${isLive?" · "+liveQLabel+" · "+liveClock:""}</div></div></div>${srTog}<div class="share-preview" id="sr-prev" data-base="${esc(baseText)}" style="max-height:180px;overflow-y:auto;white-space:pre-wrap">${esc(textWithCoach)}</div><button class="btn-wa" onclick="shareText(document.getElementById('sr-prev').innerText)">💬 Compartir por WhatsApp</button><button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('sr-prev').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar texto</button><button class="btn-s" onclick="document.getElementById('m-share-result').remove()">Cerrar</button></div>`;
-  document.body.appendChild(el);
+  document.body.appendChild(el);setTimeout(()=>{_refreshSRPrev();},0);
 }
 function _showOTPrompt(m,curQ,otCount){
   document.getElementById("ot-prompt")?.remove();
@@ -5992,7 +5992,7 @@ function shareMatchConv(){
   const t=S.teams.find(x=>x.id===S.teamId);
   const allCoaches=(t?.coaches||[]).filter(Boolean);
   const hasCoach=allCoaches.length>0;const hasAsst=allCoaches.length>1;
-  const textP=mConvText(S.teamId,S.matchId,false,{coachNames:[]});
+  const textP=mConvText(S.teamId,S.matchId,false,{coachNames:allCoaches.slice(0,1)});
   document.getElementById("m-share-match")?.remove();
   const el=document.createElement("div");el.id="m-share-match";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
