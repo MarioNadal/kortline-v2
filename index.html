@@ -2662,13 +2662,14 @@ function render(){
   if(S.screen==="att"){
     const n=document.getElementById("att-notes");
     const ex=document.getElementById("att-exercises");
-    if(n||ex){
+    if((n||ex)&&!S._attNoCaptureOnRender){
       S._attDraft={
         teamId:S.teamId, date:S.date,
         notes:n?n.value:undefined,
         ex:ex?ex.value:undefined
       };
     }
+    S._attNoCaptureOnRender=false;
   }
   // v1.6.10: captura borrador de notas del partido
   if(S.screen==="matchDetail"){
@@ -3115,7 +3116,7 @@ function att(){
       <button onclick="chgDate(-1)" style="background:none;border:none;color:var(--td);cursor:pointer;font-size:22px;padding:0 6px">‹</button>
       <div style="flex:1;text-align:center;font-family:var(--font-d);font-weight:800;font-size:17px">${fd(S.date,true)}</div>
       <button onclick="chgDate(1)" style="background:none;border:none;color:var(--td);cursor:pointer;font-size:22px;padding:0 6px">›</button>
-      <button onclick="_guardedExit(()=>{_attFlushDraft();S.date=td();S._attDraft=null;render();})" style="background:rgba(240,99,24,.15);color:var(--orange);border:none;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;font-weight:700">HOY</button>
+      <button onclick="_guardedExit(()=>{_attFlushDraft();S.date=td();S._attDraft=null;S._attNoCaptureOnRender=true;render();})" style="background:rgba(240,99,24,.15);color:var(--orange);border:none;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;font-weight:700">HOY</button>
     </div>
     <div class="agrid">${agrid}</div>
     ${filterBanner}
@@ -3574,10 +3575,11 @@ function _refreshSharePrevs(){
 }
 function shareScreen(){
   const t=S.teams.find(x=>x.id===S.teamId);
-  const dayP=buildDailyText(S.teamId,S.date,false);
-  const dayI=buildDailyText(S.teamId,S.date,true);
-  const wkP=buildWeeklyText(S.teamId,false);
-  const wkI=buildWeeklyText(S.teamId,true);
+  const _noCoach={coachNames:[]};
+  const dayP=buildDailyText(S.teamId,S.date,false,_noCoach);
+  const dayI=buildDailyText(S.teamId,S.date,true,_noCoach);
+  const wkP=buildWeeklyText(S.teamId,false,_noCoach);
+  const wkI=buildWeeklyText(S.teamId,true,_noCoach);
   const allCoaches=(t?.coaches||[]).filter(Boolean);
   const hasCoach=allCoaches.length>0;
   const hasAsst=allCoaches.length>1;
@@ -3685,11 +3687,12 @@ function buildEventoText(tid,eid,opts){
   return lines.join("\n");
 }
 function _coachToggleHtml(coaches,prefix,onChange){
-  if(!coaches.length)return"";
-  return`<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--td);margin-bottom:6px;letter-spacing:.5px">👟 ENTRENADORES EN EL MENSAJE</div><div style="display:flex;flex-wrap:wrap;gap:8px">${coaches.map((c,i)=>`<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;background:var(--s);border:1px solid var(--border);border-radius:6px;padding:4px 8px"><input type="checkbox" id="${prefix+"-c-"+i}" onchange="${onChange}()" style="accent-color:var(--orange)"/> ${c}</label>`).join("")}</div></div>`;
+  const head=coaches[0];if(!head)return"";
+  return`<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="${prefix+"-c-0"}" onchange="${onChange}()" style="accent-color:var(--orange);width:16px;height:16px"/><span style="font-size:13px">👟 ${head}</span></label></div>`;
 }
 function _getSelectedCoaches(coaches,prefix){
-  return coaches.filter((_,i)=>document.getElementById(prefix+"-c-"+i)?.checked!==false);
+  const head=coaches[0];if(!head)return[];
+  return document.getElementById(prefix+"-c-0")?.checked?[head]:[];
 }
 
 function _refreshEvtPrev(){
@@ -3706,7 +3709,7 @@ function shareEventoConv(){
   const allCoaches=(t?.coaches||[]).filter(Boolean);
   const hasCoach=allCoaches.length>0;
   const hasAsst=allCoaches.length>1;
-  const text=buildEventoText(S.teamId,eid);
+  const text=buildEventoText(S.teamId,eid,{coachNames:[]});
   document.getElementById("m-share-evento")?.remove();
   const el=document.createElement("div");el.id="m-share-evento";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
@@ -3851,8 +3854,7 @@ function shareMatchResult(){
   // Insert coaches into base text (default: shown)
   const baseText=lines.join("\n");
   const locIdx=lines.findIndex(l=>l.startsWith("🏠")||l.startsWith("✈️")||l.startsWith("⚖️"));
-  if(locIdx>=0&&window._srCoachLines.length)lines.splice(locIdx+1,0,...window._srCoachLines);
-  const textWithCoach=lines.join("\n");
+  const textWithCoach=lines.join("\n");// coaches added on toggle
   document.getElementById("m-share-result")?.remove();const el=document.createElement("div");el.id="m-share-result";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
   el.onclick=ev=>{if(ev.target===el)el.remove();};
@@ -4661,7 +4663,7 @@ function chgDate(d){
     _attFlushDraft(); // v1.6.11: commit del borrador actual antes de saltar de día
     const dt=new Date(S.date+"T12:00:00");dt.setDate(dt.getDate()+d);
     S.date=dt.toISOString().split("T")[0];S.attFilter="";
-    S._attDraft=null;
+    S._attDraft=null;S._attNoCaptureOnRender=true;
     render();
   });
 }
@@ -5990,7 +5992,7 @@ function shareMatchConv(){
   const t=S.teams.find(x=>x.id===S.teamId);
   const allCoaches=(t?.coaches||[]).filter(Boolean);
   const hasCoach=allCoaches.length>0;const hasAsst=allCoaches.length>1;
-  const textP=mConvText(S.teamId,S.matchId,false);
+  const textP=mConvText(S.teamId,S.matchId,false,{coachNames:[]});
   document.getElementById("m-share-match")?.remove();
   const el=document.createElement("div");el.id="m-share-match";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
