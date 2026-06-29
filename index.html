@@ -3686,7 +3686,7 @@ function buildEventoText(tid,eid,opts){
 }
 function _coachToggleHtml(coaches,prefix,onChange){
   if(!coaches.length)return"";
-  return`<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--td);margin-bottom:6px;letter-spacing:.5px">👟 ENTRENADORES EN EL MENSAJE</div><div style="display:flex;flex-wrap:wrap;gap:8px">${coaches.map((c,i)=>`<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;background:var(--s);border:1px solid var(--border);border-radius:6px;padding:4px 8px"><input type="checkbox" id="${prefix+"-c-"+i}" checked onchange="${onChange}()" style="accent-color:var(--orange)"/> ${c}</label>`).join("")}</div></div>`;
+  return`<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--td);margin-bottom:6px;letter-spacing:.5px">👟 ENTRENADORES EN EL MENSAJE</div><div style="display:flex;flex-wrap:wrap;gap:8px">${coaches.map((c,i)=>`<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;background:var(--s);border:1px solid var(--border);border-radius:6px;padding:4px 8px"><input type="checkbox" id="${prefix+"-c-"+i}" onchange="${onChange}()" style="accent-color:var(--orange)"/> ${c}</label>`).join("")}</div></div>`;
 }
 function _getSelectedCoaches(coaches,prefix){
   return coaches.filter((_,i)=>document.getElementById(prefix+"-c-"+i)?.checked!==false);
