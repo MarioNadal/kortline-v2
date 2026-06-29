@@ -3504,10 +3504,14 @@ function team(){
 /* ═══════════════════════════════════════
    SHARE SCREEN
 ═══════════════════════════════════════ */
-function buildDailyText(tid,date,showMotivo){
-  const t=S.teams.find(x=>x.id===tid);const players=pl(tid);const sess=so(tid,date);const coaches=(t.coaches||[]).filter(Boolean);
+function buildDailyText(tid,date,showMotivo,opts){
+  const {showCoach=true,showAsst=true}=opts||{};
+  const t=S.teams.find(x=>x.id===tid);const players=pl(tid);const sess=so(tid,date);
+  const allCoaches=(t.coaches||[]).filter(Boolean);
+  const headCoach=allCoaches[0]||null;const assistants=allCoaches.slice(1);
   let lines=[`🏀 *${t.name}* — ${t.category||""}`,`📅 ${cap(fd(date,false))}`];
-  if(coaches.length)lines.push(`👟 ${coaches.join(" · ")}`);
+  if(showCoach&&headCoach)lines.push(`👟 ${headCoach}`);
+  if(showAsst&&assistants.length)lines.push(`👟 Ayudante${assistants.length>1?"s":""}: ${assistants.join(", ")}`);
   if(showMotivo&&sess._teamScore&&S.cfg.features.teamScore)lines.push(`⭐ Valoración equipo: ${"★".repeat(sess._teamScore)} (${sess._teamScore}/10)`);
   lines.push("");
   const sorted=[...players].sort((a,b)=>(a.number||99)-(b.number||99));
@@ -3522,17 +3526,22 @@ function buildDailyText(tid,date,showMotivo){
   lines.push(`\n📊 ${pc(pr.length+la.length,players.length)}% asistencia (${pr.length+la.length}/${players.length})`);
   if(showMotivo&&sess._exercises&&S.cfg.features.exercises)lines.push(`\n📋 Ejercicios: ${sess._exercises}`);
   if(sess._notes&&showMotivo)lines.push(`📝 (Interno) ${sess._notes}`);
-  lines.push(`\n_${S.clubName}_`);
+  const realClub=S.clubName&&S.clubName!=="Kortline"?S.clubName:"";
+  const footerName=realClub||t.name;
+  lines.push(`\n_${footerName}_`);
   return lines.join("\n");
 }
-function buildWeeklyText(tid,showMotivo){
+function buildWeeklyText(tid,showMotivo,opts){
+  const {showCoach=true,showAsst=true}=opts||{};
   const t=S.teams.find(x=>x.id===tid);const players=pl(tid);
   const allSess=Object.entries(S.sessions).filter(([k])=>k.startsWith(tid+"_")).map(([k,v])=>({date:k.replace(tid+"_",""),data:v})).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7);
   if(!allSess.length)return null;
-  const coaches=(t.coaches||[]).filter(Boolean);
+  const allCoaches=(t.coaches||[]).filter(Boolean);
+  const headCoach=allCoaches[0]||null;const assistants=allCoaches.slice(1);
   let lines=[`🏀 *Resumen semanal — ${t.name}*`];
   if(t.category)lines.push(`📌 ${t.category}`);
-  if(coaches.length)lines.push(`👟 ${coaches.join(" · ")}`);
+  if(showCoach&&headCoach)lines.push(`👟 ${headCoach}`);
+  if(showAsst&&assistants.length)lines.push(`👟 Ayudante${assistants.length>1?"s":""}: ${assistants.join(", ")}`);
   lines.push(`📅 Últimos ${allSess.length} entrenamientos\n─────────────────`);
   allSess.forEach(s=>{
     const pr2=players.filter(p=>(s.data[p.id]||"present")==="present").length;
@@ -3546,25 +3555,45 @@ function buildWeeklyText(tid,showMotivo){
   const totalPr=allSess.reduce((a,s)=>{players.forEach(p=>{if((s.data[p.id]||"present")==="present"||(s.data[p.id])==="late")a++;});return a;},0);
   lines.push(`📊 *Media: ${pc(totalPr,allSess.length*players.length)}%*\n\n👤 *Por jugador:*`);
   players.map(p=>{let c=0;allSess.forEach(s=>{if((s.data[p.id]||"present")==="present"||(s.data[p.id])==="late")c++;});return{...p,c,pct:pc(c,allSess.length)};}).sort((a,b)=>b.pct-a.pct).forEach(p=>{lines.push(`${p.pct>=90?"🟢":p.pct>=75?"🟡":"🔴"} ${p.name}  ${p.pct}% (${p.c}/${allSess.length})`);});
-  lines.push(`\n_${S.clubName}_`);
+  const realClub=S.clubName&&S.clubName!=="Kortline"?S.clubName:"";
+  lines.push(`\n_${realClub||t.name}_`);
   return lines.join("\n");
 }
 function shareText(text){if(navigator.share){navigator.share({text}).catch(()=>{});}else{navigator.clipboard?.writeText(text).then(()=>toast("📋 Copiado")).catch(()=>toast("⚠️ No se pudo copiar"));}}
 function toggleSharePanel(id){const b=document.getElementById(id);if(!b)return;b.classList.toggle("open");const ic=document.getElementById(id+"-icon");if(ic)ic.textContent=b.classList.contains("open")?"▲":"▼";}
+function _refreshSharePrevs(){
+  const showCoach=document.getElementById("share-tog-coach")?.checked!==false;
+  const showAsst=document.getElementById("share-tog-asst")?.checked!==false;
+  const opts={showCoach,showAsst};
+  const dayP=buildDailyText(S.teamId,S.date,false,opts);
+  const dayI=buildDailyText(S.teamId,S.date,true,opts);
+  const wkP=buildWeeklyText(S.teamId,false,opts);
+  const wkI=buildWeeklyText(S.teamId,true,opts);
+  const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt||"";};
+  set("parents-dp",dayP);set("internal-dp",dayI);
+  set("parents-wp",wkP);set("internal-wp",wkI);
+}
 function shareScreen(){
   const t=S.teams.find(x=>x.id===S.teamId);
   const dayP=buildDailyText(S.teamId,S.date,false);
   const dayI=buildDailyText(S.teamId,S.date,true);
   const wkP=buildWeeklyText(S.teamId,false);
   const wkI=buildWeeklyText(S.teamId,true);
+  const allCoaches=(t?.coaches||[]).filter(Boolean);
+  const hasCoach=allCoaches.length>0;
+  const hasAsst=allCoaches.length>1;
+  const togBar=hasCoach?`<div style="display:flex;gap:16px;margin-bottom:12px;padding:10px 12px;background:var(--s2);border-radius:10px;border:1px solid var(--border);align-items:center"><span style="font-size:12px;font-weight:700;color:var(--td);flex:1">👟 Incluir en mensajes:</span>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;white-space:nowrap"><input type="checkbox" id="share-tog-coach" checked onchange="_refreshSharePrevs()" style="accent-color:var(--orange)"/> Entrenador</label>
+    ${hasAsst?`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;white-space:nowrap"><input type="checkbox" id="share-tog-asst" checked onchange="_refreshSharePrevs()" style="accent-color:var(--orange)"/> Ayudante${allCoaches.length>2?"s":""}</label>`:""}
+  </div>`:"";
   function mCard(id,icon,title,sub,bg,dayTxt,wkTxt){
     return`<div class="share-mode-card"><div class="share-mode-header" onclick="toggleSharePanel('${id}')"><div style="width:38px;height:38px;border-radius:10px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${icon}</div><div style="flex:1"><div style="font-weight:800;font-size:15px">${title}</div><div style="font-size:12px;color:var(--td);margin-top:1px">${sub}</div></div><span id="${id}-icon" style="color:var(--td);font-size:13px">${shareOpen[id]?"▲":"▼"}</span></div>
       <div class="share-mode-body ${shareOpen[id]?"open":""}" id="${id}">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--td);margin-bottom:6px">📅 Asistencia del día</div>
-        <div class="share-preview" id="${id}-dp">${esc(dayTxt)}</div>
+        <div class="share-preview" id="${id}-dp" style="white-space:pre-wrap">${esc(dayTxt)}</div>
         <button class="btn-wa" onclick="shareText(document.getElementById('${id}-dp').innerText)">💬 Compartir</button>
         <button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('${id}-dp').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar</button>
-        ${wkTxt?`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--td);margin:14px 0 6px">📊 Resumen semanal</div><div class="share-preview" id="${id}-wp">${esc(wkTxt)}</div><button class="btn-wa" onclick="shareText(document.getElementById('${id}-wp').innerText)">💬 Compartir resumen</button><button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('${id}-wp').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar</button>`:`<div style="font-size:13px;color:var(--tm);padding:10px 0">Sin sesiones para el resumen.</div>`}
+        ${wkTxt?`<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--td);margin:14px 0 6px">📊 Resumen semanal</div><div class="share-preview" id="${id}-wp" style="white-space:pre-wrap">${esc(wkTxt)}</div><button class="btn-wa" onclick="shareText(document.getElementById('${id}-wp').innerText)">💬 Compartir resumen</button><button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('${id}-wp').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar</button>`:`<div style="font-size:13px;color:var(--tm);padding:10px 0">Sin sesiones para el resumen.</div>`}
       </div>
     </div>`;
   }
@@ -3573,7 +3602,8 @@ function shareScreen(){
     <div style="flex:1"><div style="font-family:var(--font-d);font-weight:900;font-size:18px">📤 Compartir</div><div style="font-size:11px;color:var(--orange)">${esc(t?.name||"")} · ${fd(S.date,true)}</div></div>
   </div></header>
   <div class="content">
-    <div style="font-size:13px;color:var(--td);margin-bottom:14px;background:var(--s2);border-radius:10px;padding:10px 12px;border:1px solid var(--border)">ℹ️ Elige el formato según a quién envíes. Los motivos y notas son <b>solo uso interno</b>.</div>
+    <div style="font-size:13px;color:var(--td);margin-bottom:12px;background:var(--s2);border-radius:10px;padding:10px 12px;border:1px solid var(--border)">ℹ️ Elige el formato según a quién envíes. Los motivos y notas son <b>solo uso interno</b>.</div>
+    ${togBar}
     ${mCard("parents","👨‍👩‍👦","Para padres / grupo","Sin motivos ni notas internas","rgba(59,130,246,.3)",dayP,wkP)}
     ${mCard("internal","🔒","Uso interno","Con motivos, notas y valoraciones","rgba(107,114,128,.3)",dayI,wkI)}
   </div>
@@ -3769,6 +3799,23 @@ function evtTogglePlayer(pid){
 }
 function evtConvAll(){const e=evtById(S.teamId,S.eventId);if(!e)return;e.convocados=pl(S.teamId).map(p=>p.id);save();openEventoConvModal();}
 function evtConvNone(){const e=evtById(S.teamId,S.eventId);if(!e)return;e.convocados=[];save();openEventoConvModal();}
+function _refreshSRPrev(){
+  const showCoach=document.getElementById("sr-tog-coach")?.checked!==false;
+  const showAsst=document.getElementById("sr-tog-asst")?.checked!==false;
+  const prev=document.getElementById("sr-prev");if(!prev)return;
+  let txt=prev.dataset.base||"";
+  const coaches=(window._srCoachLines||[]);
+  const headLine=coaches[0]||null;const asstLine=coaches[1]||null;
+  // Rebuild: remove any existing coach lines, then re-add based on toggles
+  let lns=txt.split("\n").filter(l=>!l.startsWith("👟 "));
+  const insertAt=lns.findIndex(l=>l.startsWith("⚖️")||l.startsWith("🏠")||l.startsWith("✈️"));
+  const pos=insertAt>=0?insertAt+1:lns.length;
+  const toInsert=[];
+  if(showCoach&&headLine)toInsert.push(headLine);
+  if(showAsst&&asstLine)toInsert.push(asstLine);
+  lns.splice(pos,0,...toInsert);
+  prev.textContent=lns.join("\n");
+}
 function shareMatchResult(){
   const t=S.teams.find(x=>x.id===S.teamId);const m=mById(S.teamId,S.matchId);if(!t||!m)return;
   const nQ=m.quarters||4;const _pL=nQ===4?"Q":"P";const _otC=m.live?.otCount||0;
@@ -3776,13 +3823,11 @@ function shareMatchResult(){
   const qlabels=[...[...Array(nQ).keys()].map(i=>_pL+(i+1)),..._otLabelsSR];
   const live=m.live;let qScores=null;let ourTotal=0,theirTotal=0;let isLive=false;let liveQLabel="";let liveClock="";
   if(live&&(live.qScores||[]).some(s=>s&&(s[0]||s[1]))){
-    // Recortar al número real de cuartos jugados (sin el slot [0,0] placeholder de OT)
     const sliced=(live.qScores||[]).slice(0,qlabels.length).map(s=>s||[0,0]);
     qScores=sliced;ourTotal=sliced.reduce((s,q)=>s+(q[0]||0),0);theirTotal=sliced.reduce((s,q)=>s+(q[1]||0),0);
     isLive=!m.finished&&live.clockSec!==undefined;
     if(isLive){const curQ=live.q||1;liveQLabel=qlabels[curQ-1]||(_pL+curQ);liveClock=_fmtClock(live.clockSec||0);}
   } else {
-    // Ruta manual: leer nQ cuartos regulares + todas las OTs jugadas
     const q=m.q||[];const totalPairs=nQ+_otC;
     if(q.some(v=>v!==null&&v!==undefined&&v!=="")){qScores=[];for(let i=0;i<totalPairs;i++)qScores.push([q[i*2]??null,q[i*2+1]??null]);}
     if(qScores){const sc=mScore(m);if(sc){ourTotal=m.location==="away"?sc.a:sc.h;theirTotal=m.location==="away"?sc.h:sc.a;}}
@@ -3790,19 +3835,38 @@ function shareMatchResult(){
   const diff=ourTotal-theirTotal;const diffStr=diff>0?"+"+diff:diff<0?String(diff):"=";const diffArrow=diff>0?"🔺":diff<0?"🔻":"🟰";
   const r=ourTotal>theirTotal?"W":ourTotal<theirTotal?"L":ourTotal===theirTotal&&(ourTotal>0||theirTotal>0)?"D":"P";
   const statusLine=isLive?`🔴 *EN VIVO · ${liveQLabel} · ${liveClock}*`:r!=="P"?`${r==="W"?"🏆":r==="L"?"❌":"🤝"} *${r==="W"?"VICTORIA":r==="L"?"DERROTA":"EMPATE"}*`:"⏳ *PENDIENTE*";
-  const abrev=(S.clubAbrev||S.clubName||"").toUpperCase();const lema=S.clubLema||"";
+  const realClub=S.clubName&&S.clubName!=="Kortline"?S.clubName:"";
+  const abrev=(S.clubAbrev||realClub||"").toUpperCase();const lema=S.clubLema||"";
+  // Build base lines (without coaches)
   const lines=[];if(abrev)lines.push(`🏀 ${abrev}`);lines.push("━━━━━━━━━━━━━━━━━━━━━");lines.push(statusLine);lines.push(`${t.name} vs ${m.rival||"Rival"}`);
   if(m.date)lines.push(`\n📅 ${cap(fd(m.date,true))}${m.time?" · 🕐 "+m.time+"h":""}`);if(m.venue)lines.push(`📍 ${m.venue}`);
   lines.push(m.location==="home"?"🏠 Casa":m.location==="away"?"✈️ Fuera":"⚖️ Neutral");
   if(ourTotal>0||theirTotal>0||r!=="P"){lines.push(`\n*${ourTotal}  —  ${theirTotal}*`);lines.push(`${diffArrow} ${diffStr} pts`);}
   if(qScores&&qScores.length>0){const qLines=qScores.map((qs,i)=>{if(!qs)return null;const h=qs[0];const a=qs[1];if(h===null||h===undefined||a===null||a===undefined||h===""||a==="")return null;const our=m.location==="away"?a:h;const their=m.location==="away"?h:a;return`  ${qlabels[i]||"OT"}  ${our} – ${their}  ${our>their?"✅":our<their?"❌":"➖"}`;}).filter(Boolean);if(qLines.length>0)lines.push(`\n📊 Por cuartos:\n${qLines.join("\n")}`);}
-  if(lema)lines.push(`\n${lema}`);lines.push(`\n_${S.clubName}_`);
-  const text=lines.join("\n");
+  if(lema)lines.push(`\n${lema}`);
+  const footerName=realClub||t.name;
+  lines.push(`\n_${footerName}_`);
+  // Build coach lines
+  const allCoachesSR=(t.coaches||[]).filter(Boolean);
+  const headCoachSR=allCoachesSR[0]||null;const asstsSR=allCoachesSR.slice(1);
+  window._srCoachLines=[];
+  if(headCoachSR)window._srCoachLines.push(`👟 ${headCoachSR}`);
+  if(asstsSR.length)window._srCoachLines.push(`👟 Ayudante${asstsSR.length>1?"s":""}: ${asstsSR.join(", ")}`);
+  // Insert coaches into base text (default: shown)
+  const baseText=lines.join("\n");
+  const locIdx=lines.findIndex(l=>l.startsWith("🏠")||l.startsWith("✈️")||l.startsWith("⚖️"));
+  if(locIdx>=0&&window._srCoachLines.length)lines.splice(locIdx+1,0,...window._srCoachLines);
+  const textWithCoach=lines.join("\n");
   document.getElementById("m-share-result")?.remove();const el=document.createElement("div");el.id="m-share-result";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
   el.onclick=ev=>{if(ev.target===el)el.remove();};
   const resColor=r==="W"?"#22c55e":r==="L"?"#ef4444":r==="D"?"#f59e0b":isLive?"#ef4444":"var(--td)";
-  el.innerHTML=`<div class="modal"><div class="mhandle"></div><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:40px;height:40px;border-radius:10px;background:${resColor}22;border:1px solid ${resColor}44;display:flex;align-items:center;justify-content:center;font-size:20px">${isLive?"🔴":r==="W"?"🏆":r==="L"?"❌":r==="D"?"🤝":"📊"}</div><div><div class="mtitle" style="margin:0 0 2px">${isLive?"Marcador en vivo":"Compartir resultado"}</div><div style="font-size:12px;color:var(--td)">${esc(t.name)} vs ${esc(m.rival||"Rival")}${isLive?" · "+liveQLabel+" · "+liveClock:""}</div></div></div><div class="share-preview" id="sr-prev" style="max-height:220px;overflow-y:auto">${esc(text)}</div><button class="btn-wa" onclick="shareText(document.getElementById('sr-prev').innerText)">💬 Compartir por WhatsApp</button><button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('sr-prev').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar texto</button><button class="btn-s" onclick="document.getElementById('m-share-result').remove()">Cerrar</button></div>`;
+  const hasCoachSR=allCoachesSR.length>0;const hasAsstSR=allCoachesSR.length>1;
+  const srTog=hasCoachSR?`<div style="display:flex;gap:16px;margin-bottom:10px;padding:8px 10px;background:var(--s2);border-radius:8px;border:1px solid var(--border)">
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="sr-tog-coach" checked onchange="_refreshSRPrev()" style="accent-color:var(--orange)"/> Entrenador</label>
+    ${hasAsstSR?`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="sr-tog-asst" checked onchange="_refreshSRPrev()" style="accent-color:var(--orange)"/> Ayudante${allCoachesSR.length>2?"s":""}</label>`:""}
+  </div>`:"";
+  el.innerHTML=`<div class="modal"><div class="mhandle"></div><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:40px;height:40px;border-radius:10px;background:${resColor}22;border:1px solid ${resColor}44;display:flex;align-items:center;justify-content:center;font-size:20px">${isLive?"🔴":r==="W"?"🏆":r==="L"?"❌":r==="D"?"🤝":"📊"}</div><div><div class="mtitle" style="margin:0 0 2px">${isLive?"Marcador en vivo":"Compartir resultado"}</div><div style="font-size:12px;color:var(--td)">${esc(t.name)} vs ${esc(m.rival||"Rival")}${isLive?" · "+liveQLabel+" · "+liveClock:""}</div></div></div>${srTog}<div class="share-preview" id="sr-prev" data-base="${esc(baseText)}" style="max-height:180px;overflow-y:auto;white-space:pre-wrap">${esc(textWithCoach)}</div><button class="btn-wa" onclick="shareText(document.getElementById('sr-prev').innerText)">💬 Compartir por WhatsApp</button><button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('sr-prev').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar texto</button><button class="btn-s" onclick="document.getElementById('m-share-result').remove()">Cerrar</button></div>`;
   document.body.appendChild(el);
 }
 function _showOTPrompt(m,curQ,otCount){
@@ -5066,10 +5130,12 @@ function mSeasonStats(tid){
   });
   return{w,l,d,p,pf,pa,total:ms.length};
 }
-function mConvText(tid,mid,internal){
+function mConvText(tid,mid,internal,opts){
+  const {showCoach=true,showAsst=true}=opts||{};
   const t=S.teams.find(x=>x.id===tid);const m=mById(tid,mid);if(!m)return"";
   const players=pl(tid);
-  const coaches=(t.coaches||[]).filter(Boolean);
+  const allCoachesM=(t.coaches||[]).filter(Boolean);
+  const headCoachM=allCoachesM[0]||null;const assistantsM=allCoachesM.slice(1);
   const convP=players.filter(p=>(m.convocados||[]).includes(p.id)).sort((a,b)=>(a.number||99)-(b.number||99));
   const titP=players.filter(p=>(m.titulares||[]).includes(p.id));
   const sc=mScore(m);
@@ -5077,7 +5143,8 @@ function mConvText(tid,mid,internal){
   let lines=[`🏀 *${t.name}* vs *${m.rival||"Rival"}*`];
   lines.push(`📅 ${m.date?cap(fd(m.date,false)):"Fecha TBD"}${m.time?" · 🕐 "+m.time+"h":""}`);
   lines.push(`${locLabel}${m.venue?" · "+m.venue:""}`);
-  if(coaches.length)lines.push(`👟 ${coaches.join(" · ")}`);
+  if(showCoach&&headCoachM)lines.push(`👟 ${headCoachM}`);
+  if(showAsst&&assistantsM.length)lines.push(`👟 Ayudante${assistantsM.length>1?"s":""}: ${assistantsM.join(", ")}`);
   if(sc){
     const r=mResult(m);const o=mOurScore(m),th=mTheirScore(m);
     lines.push(`
@@ -5919,19 +5986,32 @@ function deleteMatchConfirm(mid){
     save();S.screen="matchList";render();toast("🗑 Partido eliminado");
   });
 }
+function _refreshMatchConvPrev(){
+  const showCoach=document.getElementById("mc-tog-coach")?.checked!==false;
+  const showAsst=document.getElementById("mc-tog-asst")?.checked!==false;
+  const textP=mConvText(S.teamId,S.matchId,false,{showCoach,showAsst});
+  const prev=document.getElementById("m-share-match")?.querySelector(".share-preview");
+  if(prev)prev.textContent=textP;
+}
 function shareMatchConv(){
+  const t=S.teams.find(x=>x.id===S.teamId);
+  const allCoaches=(t?.coaches||[]).filter(Boolean);
+  const hasCoach=allCoaches.length>0;const hasAsst=allCoaches.length>1;
   const textP=mConvText(S.teamId,S.matchId,false);
-  const textI=mConvText(S.teamId,S.matchId,true);
-  // open share modal
   document.getElementById("m-share-match")?.remove();
   const el=document.createElement("div");el.id="m-share-match";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
   el.onclick=e=>{if(e.target===el)el.remove();};
+  const togHtml=hasCoach?`<div style="display:flex;gap:16px;margin-bottom:10px;padding:8px 10px;background:var(--s2);border-radius:8px;border:1px solid var(--border)">
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="mc-tog-coach" checked onchange="_refreshMatchConvPrev()" style="accent-color:var(--orange)"/> Entrenador</label>
+    ${hasAsst?`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="mc-tog-asst" checked onchange="_refreshMatchConvPrev()" style="accent-color:var(--orange)"/> Ayudante${allCoaches.length>2?"s":""}</label>`:""}
+  </div>`:"";
   el.innerHTML=`<div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle">📤 Compartir convocatoria</div>
+    ${togHtml}
     <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--td);margin-bottom:6px">Para padres / grupo</div>
-    <div class="share-preview" style="max-height:160px">${esc(textP)}</div>
+    <div class="share-preview" style="max-height:160px;white-space:pre-wrap">${esc(textP)}</div>
     <button class="btn-wa" onclick="shareText(document.getElementById('m-share-match').querySelector('.share-preview').innerText)">💬 Compartir</button>
     <button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('m-share-match').querySelector('.share-preview').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar</button>
     <button class="btn-s" onclick="document.getElementById('m-share-match').remove()">Cerrar</button>
