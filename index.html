@@ -3505,13 +3505,12 @@ function team(){
    SHARE SCREEN
 ═══════════════════════════════════════ */
 function buildDailyText(tid,date,showMotivo,opts){
-  const {showCoach=true,showAsst=true}=opts||{};
+  const {coachNames=null}=opts||{};
   const t=S.teams.find(x=>x.id===tid);const players=pl(tid);const sess=so(tid,date);
   const allCoaches=(t.coaches||[]).filter(Boolean);
-  const headCoach=allCoaches[0]||null;const assistants=allCoaches.slice(1);
   let lines=[`🏀 *${t.name}* — ${t.category||""}`,`📅 ${cap(fd(date,false))}`];
-  if(showCoach&&headCoach)lines.push(`👟 ${headCoach}`);
-  if(showAsst&&assistants.length)lines.push(`👟 Ayudante${assistants.length>1?"s":""}: ${assistants.join(", ")}`);
+  const coachesToShowD=coachNames!==null?coachNames:allCoaches;
+  coachesToShowD.forEach(c=>lines.push(`👟 ${c}`));
   if(showMotivo&&sess._teamScore&&S.cfg.features.teamScore)lines.push(`⭐ Valoración equipo: ${"★".repeat(sess._teamScore)} (${sess._teamScore}/10)`);
   lines.push("");
   const sorted=[...players].sort((a,b)=>(a.number||99)-(b.number||99));
@@ -3532,16 +3531,15 @@ function buildDailyText(tid,date,showMotivo,opts){
   return lines.join("\n");
 }
 function buildWeeklyText(tid,showMotivo,opts){
-  const {showCoach=true,showAsst=true}=opts||{};
+  const {coachNames=null}=opts||{};
   const t=S.teams.find(x=>x.id===tid);const players=pl(tid);
   const allSess=Object.entries(S.sessions).filter(([k])=>k.startsWith(tid+"_")).map(([k,v])=>({date:k.replace(tid+"_",""),data:v})).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7);
   if(!allSess.length)return null;
   const allCoaches=(t.coaches||[]).filter(Boolean);
-  const headCoach=allCoaches[0]||null;const assistants=allCoaches.slice(1);
   let lines=[`🏀 *Resumen semanal — ${t.name}*`];
   if(t.category)lines.push(`📌 ${t.category}`);
-  if(showCoach&&headCoach)lines.push(`👟 ${headCoach}`);
-  if(showAsst&&assistants.length)lines.push(`👟 Ayudante${assistants.length>1?"s":""}: ${assistants.join(", ")}`);
+  const coachesToShowW=coachNames!==null?coachNames:allCoaches;
+  coachesToShowW.forEach(c=>lines.push(`👟 ${c}`));
   lines.push(`📅 Últimos ${allSess.length} entrenamientos\n─────────────────`);
   allSess.forEach(s=>{
     const pr2=players.filter(p=>(s.data[p.id]||"present")==="present").length;
@@ -3562,9 +3560,10 @@ function buildWeeklyText(tid,showMotivo,opts){
 function shareText(text){if(navigator.share){navigator.share({text}).catch(()=>{});}else{navigator.clipboard?.writeText(text).then(()=>toast("📋 Copiado")).catch(()=>toast("⚠️ No se pudo copiar"));}}
 function toggleSharePanel(id){const b=document.getElementById(id);if(!b)return;b.classList.toggle("open");const ic=document.getElementById(id+"-icon");if(ic)ic.textContent=b.classList.contains("open")?"▲":"▼";}
 function _refreshSharePrevs(){
-  const showCoach=document.getElementById("share-tog-coach")?.checked!==false;
-  const showAsst=document.getElementById("share-tog-asst")?.checked!==false;
-  const opts={showCoach,showAsst};
+  const t=S.teams.find(x=>x.id===S.teamId);
+  const allC=(t?.coaches||[]).filter(Boolean);
+  const coachNames=_getSelectedCoaches(allC,"share");
+  const opts={coachNames};
   const dayP=buildDailyText(S.teamId,S.date,false,opts);
   const dayI=buildDailyText(S.teamId,S.date,true,opts);
   const wkP=buildWeeklyText(S.teamId,false,opts);
@@ -3582,10 +3581,7 @@ function shareScreen(){
   const allCoaches=(t?.coaches||[]).filter(Boolean);
   const hasCoach=allCoaches.length>0;
   const hasAsst=allCoaches.length>1;
-  const togBar=hasCoach?`<div style="display:flex;gap:16px;margin-bottom:12px;padding:10px 12px;background:var(--s2);border-radius:10px;border:1px solid var(--border);align-items:center"><span style="font-size:12px;font-weight:700;color:var(--td);flex:1">👟 Incluir en mensajes:</span>
-    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;white-space:nowrap"><input type="checkbox" id="share-tog-coach" checked onchange="_refreshSharePrevs()" style="accent-color:var(--orange)"/> Entrenador</label>
-    ${hasAsst?`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;white-space:nowrap"><input type="checkbox" id="share-tog-asst" checked onchange="_refreshSharePrevs()" style="accent-color:var(--orange)"/> Ayudante${allCoaches.length>2?"s":""}</label>`:""}
-  </div>`:"";
+  const togBar=_coachToggleHtml(allCoaches,"share","_refreshSharePrevs");
   function mCard(id,icon,title,sub,bg,dayTxt,wkTxt){
     return`<div class="share-mode-card"><div class="share-mode-header" onclick="toggleSharePanel('${id}')"><div style="width:38px;height:38px;border-radius:10px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${icon}</div><div style="flex:1"><div style="font-weight:800;font-size:15px">${title}</div><div style="font-size:12px;color:var(--td);margin-top:1px">${sub}</div></div><span id="${id}-icon" style="color:var(--td);font-size:13px">${shareOpen[id]?"▲":"▼"}</span></div>
       <div class="share-mode-body ${shareOpen[id]?"open":""}" id="${id}">
@@ -3664,7 +3660,7 @@ function eventos(){
   ${navBar()}`;
 }
 function buildEventoText(tid,eid,opts){
-  const {showCoach=true,showAsst=true}=opts||{};
+  const {coachNames=null}=opts||{};
   const t=S.teams.find(x=>x.id===tid);const e=evtById(tid,eid);if(!t||!e)return"";
   const players=pl(tid);
   const convP=players.filter(p=>(e.convocados||[]).includes(p.id)).sort((a,b)=>(a.number||99)-(b.number||99));
@@ -3679,10 +3675,8 @@ function buildEventoText(tid,eid,opts){
   if(e.horaConc)lines.push(`⏰ Concentración: ${e.horaConc}h`);
   if(e.tipo==="partido"&&e.rival)lines.push(`🆚 ${e.rival}`);
   const allCoaches=(t.coaches||[]).filter(Boolean);
-  const headCoach=allCoaches[0]||null;
-  const assistants=allCoaches.slice(1);
-  if(showCoach&&headCoach)lines.push(`👟 ${headCoach}`);
-  if(showAsst&&assistants.length)lines.push(`👟 Ayudante${assistants.length>1?"s":""}: ${assistants.join(", ")}`);
+  const coachesToShow=coachNames!==null?coachNames:allCoaches;
+  coachesToShow.forEach(c=>lines.push(`👟 ${c}`));
   if(convP.length){lines.push(`\n*CONVOCADOS (${convP.length}):*`);convP.forEach((p,i)=>lines.push(`${i+1}. ${p.name}${p.number?" — #"+p.number:""}`));}
   if(e.mensaje)lines.push(`\n💬 ${e.mensaje}`);
   if(lema)lines.push(`\n${lema}`);
@@ -3690,12 +3684,21 @@ function buildEventoText(tid,eid,opts){
   lines.push(`\n_${footerName}_`);
   return lines.join("\n");
 }
+function _coachToggleHtml(coaches,prefix,onChange){
+  if(!coaches.length)return"";
+  return`<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:var(--td);margin-bottom:6px;letter-spacing:.5px">👟 ENTRENADORES EN EL MENSAJE</div><div style="display:flex;flex-wrap:wrap;gap:8px">${coaches.map((c,i)=>`<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;background:var(--s);border:1px solid var(--border);border-radius:6px;padding:4px 8px"><input type="checkbox" id="${prefix+"-c-"+i}" checked onchange="${onChange}()" style="accent-color:var(--orange)"/> ${c}</label>`).join("")}</div></div>`;
+}
+function _getSelectedCoaches(coaches,prefix){
+  return coaches.filter((_,i)=>document.getElementById(prefix+"-c-"+i)?.checked!==false);
+}
+
 function _refreshEvtPrev(){
   const tid=S.teamId,eid=S.eventId;
-  const showCoach=document.getElementById("ev-tog-coach")?.checked!==false;
-  const showAsst=document.getElementById("ev-tog-asst")?.checked!==false;
+  const t=S.teams.find(x=>x.id===tid);
+  const allC=(t?.coaches||[]).filter(Boolean);
+  const coachNames=_getSelectedCoaches(allC,"ev");
   const prev=document.getElementById("ev-prev");
-  if(prev)prev.textContent=buildEventoText(tid,eid,{showCoach,showAsst});
+  if(prev)prev.textContent=buildEventoText(tid,eid,{coachNames});
 }
 function shareEventoConv(){
   const eid=S.eventId;if(!eid)return;
@@ -3708,10 +3711,7 @@ function shareEventoConv(){
   const el=document.createElement("div");el.id="m-share-evento";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
   el.onclick=ev=>{if(ev.target===el)el.remove();};
-  const togHtml=hasCoach?`<div style="display:flex;gap:16px;margin-bottom:10px;padding:8px 10px;background:var(--s2);border-radius:8px;border:1px solid var(--border)">
-    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="ev-tog-coach" checked onchange="_refreshEvtPrev()" style="accent-color:var(--orange)"/> Entrenador</label>
-    ${hasAsst?`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="ev-tog-asst" checked onchange="_refreshEvtPrev()" style="accent-color:var(--orange)"/> Ayudante${allCoaches.length>2?"s":""}</label>`:""}
-  </div>`:"";
+  const togHtml=_coachToggleHtml(allCoaches,"ev","_refreshEvtPrev");
   el.innerHTML=`<div class="modal"><div class="mhandle"></div><div class="mtitle">📤 Compartir convocatoria</div>${togHtml}<div style="font-size:12px;color:var(--td);margin-bottom:10px;background:var(--s2);border-radius:8px;padding:8px 10px;border:1px solid var(--border)">Vista previa</div><div class="share-preview" id="ev-prev" style="max-height:200px;overflow-y:auto;white-space:pre-wrap">${esc(text)}</div><button class="btn-wa" onclick="shareText(document.getElementById('ev-prev').innerText)">💬 Compartir por WhatsApp</button><button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('ev-prev').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar texto</button><button class="btn-s" onclick="document.getElementById('m-share-evento').remove()">Cerrar</button></div>`;
   document.body.appendChild(el);
 }
@@ -3800,20 +3800,16 @@ function evtTogglePlayer(pid){
 function evtConvAll(){const e=evtById(S.teamId,S.eventId);if(!e)return;e.convocados=pl(S.teamId).map(p=>p.id);save();openEventoConvModal();}
 function evtConvNone(){const e=evtById(S.teamId,S.eventId);if(!e)return;e.convocados=[];save();openEventoConvModal();}
 function _refreshSRPrev(){
-  const showCoach=document.getElementById("sr-tog-coach")?.checked!==false;
-  const showAsst=document.getElementById("sr-tog-asst")?.checked!==false;
+  const t=S.teams.find(x=>x.id===S.teamId);
+  const allC=(t?.coaches||[]).filter(Boolean);
+  const selected=_getSelectedCoaches(allC,"sr");
   const prev=document.getElementById("sr-prev");if(!prev)return;
-  let txt=prev.dataset.base||"";
-  const coaches=(window._srCoachLines||[]);
-  const headLine=coaches[0]||null;const asstLine=coaches[1]||null;
-  // Rebuild: remove any existing coach lines, then re-add based on toggles
-  let lns=txt.split("\n").filter(l=>!l.startsWith("👟 "));
+  const base=prev.dataset.base||"";
+  // Remove existing coach lines and re-insert selected ones
+  let lns=base.split("\n").filter(l=>!l.startsWith("👟 "));
   const insertAt=lns.findIndex(l=>l.startsWith("⚖️")||l.startsWith("🏠")||l.startsWith("✈️"));
   const pos=insertAt>=0?insertAt+1:lns.length;
-  const toInsert=[];
-  if(showCoach&&headLine)toInsert.push(headLine);
-  if(showAsst&&asstLine)toInsert.push(asstLine);
-  lns.splice(pos,0,...toInsert);
+  lns.splice(pos,0,...selected.map(c=>`👟 ${c}`));
   prev.textContent=lns.join("\n");
 }
 function shareMatchResult(){
@@ -3862,10 +3858,7 @@ function shareMatchResult(){
   el.onclick=ev=>{if(ev.target===el)el.remove();};
   const resColor=r==="W"?"#22c55e":r==="L"?"#ef4444":r==="D"?"#f59e0b":isLive?"#ef4444":"var(--td)";
   const hasCoachSR=allCoachesSR.length>0;const hasAsstSR=allCoachesSR.length>1;
-  const srTog=hasCoachSR?`<div style="display:flex;gap:16px;margin-bottom:10px;padding:8px 10px;background:var(--s2);border-radius:8px;border:1px solid var(--border)">
-    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="sr-tog-coach" checked onchange="_refreshSRPrev()" style="accent-color:var(--orange)"/> Entrenador</label>
-    ${hasAsstSR?`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="sr-tog-asst" checked onchange="_refreshSRPrev()" style="accent-color:var(--orange)"/> Ayudante${allCoachesSR.length>2?"s":""}</label>`:""}
-  </div>`:"";
+  const srTog=_coachToggleHtml(allCoachesSR,"sr","_refreshSRPrev");
   el.innerHTML=`<div class="modal"><div class="mhandle"></div><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="width:40px;height:40px;border-radius:10px;background:${resColor}22;border:1px solid ${resColor}44;display:flex;align-items:center;justify-content:center;font-size:20px">${isLive?"🔴":r==="W"?"🏆":r==="L"?"❌":r==="D"?"🤝":"📊"}</div><div><div class="mtitle" style="margin:0 0 2px">${isLive?"Marcador en vivo":"Compartir resultado"}</div><div style="font-size:12px;color:var(--td)">${esc(t.name)} vs ${esc(m.rival||"Rival")}${isLive?" · "+liveQLabel+" · "+liveClock:""}</div></div></div>${srTog}<div class="share-preview" id="sr-prev" data-base="${esc(baseText)}" style="max-height:180px;overflow-y:auto;white-space:pre-wrap">${esc(textWithCoach)}</div><button class="btn-wa" onclick="shareText(document.getElementById('sr-prev').innerText)">💬 Compartir por WhatsApp</button><button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('sr-prev').innerText).then(()=>toast('📋 Copiado'))">📋 Copiar texto</button><button class="btn-s" onclick="document.getElementById('m-share-result').remove()">Cerrar</button></div>`;
   document.body.appendChild(el);
 }
@@ -5131,11 +5124,10 @@ function mSeasonStats(tid){
   return{w,l,d,p,pf,pa,total:ms.length};
 }
 function mConvText(tid,mid,internal,opts){
-  const {showCoach=true,showAsst=true}=opts||{};
+  const {coachNames=null}=opts||{};
   const t=S.teams.find(x=>x.id===tid);const m=mById(tid,mid);if(!m)return"";
   const players=pl(tid);
   const allCoachesM=(t.coaches||[]).filter(Boolean);
-  const headCoachM=allCoachesM[0]||null;const assistantsM=allCoachesM.slice(1);
   const convP=players.filter(p=>(m.convocados||[]).includes(p.id)).sort((a,b)=>(a.number||99)-(b.number||99));
   const titP=players.filter(p=>(m.titulares||[]).includes(p.id));
   const sc=mScore(m);
@@ -5143,8 +5135,8 @@ function mConvText(tid,mid,internal,opts){
   let lines=[`🏀 *${t.name}* vs *${m.rival||"Rival"}*`];
   lines.push(`📅 ${m.date?cap(fd(m.date,false)):"Fecha TBD"}${m.time?" · 🕐 "+m.time+"h":""}`);
   lines.push(`${locLabel}${m.venue?" · "+m.venue:""}`);
-  if(showCoach&&headCoachM)lines.push(`👟 ${headCoachM}`);
-  if(showAsst&&assistantsM.length)lines.push(`👟 Ayudante${assistantsM.length>1?"s":""}: ${assistantsM.join(", ")}`);
+  const coachesToShowM=coachNames!==null?coachNames:(allCoachesM||[]);
+  coachesToShowM.forEach(c=>lines.push(`👟 ${c}`));
   if(sc){
     const r=mResult(m);const o=mOurScore(m),th=mTheirScore(m);
     lines.push(`
@@ -5987,9 +5979,10 @@ function deleteMatchConfirm(mid){
   });
 }
 function _refreshMatchConvPrev(){
-  const showCoach=document.getElementById("mc-tog-coach")?.checked!==false;
-  const showAsst=document.getElementById("mc-tog-asst")?.checked!==false;
-  const textP=mConvText(S.teamId,S.matchId,false,{showCoach,showAsst});
+  const t=S.teams.find(x=>x.id===S.teamId);
+  const allC=(t?.coaches||[]).filter(Boolean);
+  const coachNames=_getSelectedCoaches(allC,"mc");
+  const textP=mConvText(S.teamId,S.matchId,false,{coachNames});
   const prev=document.getElementById("m-share-match")?.querySelector(".share-preview");
   if(prev)prev.textContent=textP;
 }
@@ -6002,10 +5995,7 @@ function shareMatchConv(){
   const el=document.createElement("div");el.id="m-share-match";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
   el.onclick=e=>{if(e.target===el)el.remove();};
-  const togHtml=hasCoach?`<div style="display:flex;gap:16px;margin-bottom:10px;padding:8px 10px;background:var(--s2);border-radius:8px;border:1px solid var(--border)">
-    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="mc-tog-coach" checked onchange="_refreshMatchConvPrev()" style="accent-color:var(--orange)"/> Entrenador</label>
-    ${hasAsst?`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="mc-tog-asst" checked onchange="_refreshMatchConvPrev()" style="accent-color:var(--orange)"/> Ayudante${allCoaches.length>2?"s":""}</label>`:""}
-  </div>`:"";
+  const togHtml=_coachToggleHtml(allCoaches,"mc","_refreshMatchConvPrev");
   el.innerHTML=`<div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle">📤 Compartir convocatoria</div>
