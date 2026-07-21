@@ -1002,6 +1002,7 @@ function _forceSubAfterDQ(pid,isRival){
 window._doDQSub=function(inId,outId,isRival){
   document.getElementById("m-dqsub")?.remove();
   const m=mById(S.teamId,S.matchId);if(!m||!m.live)return;
+  _stopClockForSub(m);
   const live=m.live;
   // v1.8.0: tracking solo para nuestro equipo (rival no tiene minTracked)
   if(!isRival){_trackExit(m,outId); if(inId)_trackEnter(m,inId);}
@@ -1292,10 +1293,12 @@ function openShotChartModal(pid,action,pts){
   const m=mById(S.teamId,S.matchId);if(!m||!m.live)return;
   const players=pl(S.teamId);
   const rivalPlayers=m.rivalPlayers||[];
-  const isRival=rivalPlayers.some(p=>p.id===pid);
+  const isTeamShot=pid==="team";
+  const isRival=!isTeamShot&&rivalPlayers.some(p=>p.id===pid);
   const p=isRival?rivalPlayers.find(x=>x.id===pid):players.find(x=>x.id===pid);
-  const pname=_shortName(p?.name||"?");
-  const pNum=p?.number||"?";
+  const t_=S.teams.find(x=>x.id===S.teamId);
+  const pname=isTeamShot?"Equipo (sin jugador)":_shortName(p?.name||"?");
+  const pNum=isTeamShot?"":(p?.number||"?");
   const made=action==="p2m"||action==="p3m";
   const value=(action==="p3m"||action==="p3a")?3:2;
   const labelPts=made?(value===3?"+3 Triple":"+2 Canasta"):(value===3?"✗ Fallo de 3":"✗ Fallo de 2");
@@ -1307,7 +1310,7 @@ function openShotChartModal(pid,action,pts){
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div style="text-align:left">
         <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--orange)">🎯 Shot Chart</div>
-        <div style="font-size:14px;font-weight:700;color:var(--tx);margin-top:2px">${esc(pname)} <span style="color:var(--td);font-size:11px">#${pNum}</span></div>
+        <div style="font-size:14px;font-weight:700;color:var(--tx);margin-top:2px">${esc(pname)}${pNum?` <span style="color:var(--td);font-size:11px">#${pNum}</span>`:""}</div>
       </div>
       <button onclick="_cancelShotChart()" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--td);cursor:pointer;font-size:12px;font-weight:700;padding:6px 10px">✕ Cancelar</button>
     </div>
@@ -1384,9 +1387,10 @@ function _confirmShot(pid,action,pts,xNorm,yNorm){
   document.getElementById("m-shotchart")?.remove();
   window._shotChartCallback=null;
   const m=mById(S.teamId,S.matchId);if(!m||!m.live)return;
-  // Marcar como "directo" para que liveAction NO vuelva a abrir el modal
+  // Marcar como "directo" para que liveAction/liveTeamAction NO vuelvan a abrir el modal
   window._scSkipCapture=true;
-  liveAction(pid,action,pts);
+  if(pid==="team")liveTeamAction(action,pts);
+  else liveAction(pid,action,pts);
   window._scSkipCapture=false;
   // Persistir las coordenadas en m.live.shots[]
   if(!m.live.shots)m.live.shots=[];
@@ -6624,8 +6628,11 @@ function liveGame(){
     ]},
     {lbl:"🎯 OTROS",col:"#06b6d4",acts:[
       {id:"ast",l:"AST",s:"Asistencia",c:"#06b6d4",pts:0},{id:"stl",l:"ROB",s:"Robo",c:"#3b82f6",pts:0},
-      {id:"blk",l:"TAP",s:"Tapón",c:"#8b5cf6",pts:0},{id:"to",l:"PER",s:"Pérdida",c:"#ef4444",pts:0},
-      {id:"foul",l:"FALT",s:"Falta",c:"#f59e0b",pts:0},{id:"ftech",l:"TÉC",s:"Técnica",c:"#ef4444",pts:0}
+      {id:"blk",l:"TAP",s:"Tapón",c:"#8b5cf6",pts:0},{id:"to",l:"PER",s:"Pérdida",c:"#ef4444",pts:0}
+    ]},
+    {lbl:"🤚 FALTAS",col:"#f59e0b",acts:[
+      {id:"foul",l:"FALT",s:"Personal",c:"#f59e0b",pts:0},{id:"ftech",l:"TÉC",s:"Técnica",c:"#ef4444",pts:0},
+      {id:"funsport",l:"ANT",s:"Antidep.",c:"#ef4444",pts:0},{id:"fdq",l:"DESC",s:"Descalif.",c:"#dc2626",pts:0}
     ]}
   ];
   let teamActionBlock="";
@@ -7729,29 +7736,59 @@ function saveTLResults(rpid, total, foulerPid){
 // ── Team-only mode actions (no individual player) ──
 function liveTeamAction(action, pts){
   const m=mById(S.teamId,S.matchId);if(!m||!m.live)return;
+  // v2-live . B-TEAM1: el modo "estadisticas de equipo" es independiente del
+  // shot chart -- si esta activo, capturamos zona igual que en modo individual
+  // (con pid generico 'team', sin box score por jugador).
+  if(m.shotChart && !window._scSkipCapture){
+    if(action==="p2m"||action==="p3m"||action==="p2a"||action==="p3a"){
+      openShotChartModal("team",action,pts);
+      return;
+    }
+  }
   const live=m.live;
+  const isRivalSide=live.activeTeam==="rival";
   const qi=(live.q||1)-1;
   _ensureQSlot(live,qi);
-  if(pts>0)live.qScores[qi][0]=(live.qScores[qi][0]||0)+pts;
-  if(action==="foul"||action==="ftech"||action==="funsport"||action==="fdq"){
-    if(!live.teamFouls)live.teamFouls=[0,0,0,0,0];
-    live.teamFouls[qi]=(live.teamFouls[qi]||0)+1;
-    _checkBonusEnter(m,qi);
-    // Parada de reloj con falta (v1.6.13 · B-38) si el partido lo tiene activado
-    if(m.stopOnFoul&&live.clockRunning){
-      live.clockRunning=false;clearInterval(_liveTimer);_liveTimer=null;
-      toast("⏱ Reloj parado por falta");
+  const isFoulAction=(action==="foul"||action==="ftech"||action==="funsport"||action==="fdq");
+  // v2-live . B-TEAM2: el modo equipo tambien es independiente del lado activo
+  // (nuestro/rival) -- antes escribia siempre en nuestro marcador aunque
+  // estuvieras viendo la pestana del rival.
+  if(isRivalSide){
+    if(pts>0)live.qScores[qi][1]=(live.qScores[qi][1]||0)+pts;
+    if(isFoulAction){
+      if(!live.rivalFouls)live.rivalFouls=[0,0,0,0,0];
+      live.rivalFouls[qi]=(live.rivalFouls[qi]||0)+1;
+      if(m.stopOnFoul&&live.clockRunning){
+        live.clockRunning=false;clearInterval(_liveTimer);_liveTimer=null;
+        toast("⏱ Reloj parado por falta");
+      }
+      // Falta del rival -> tiros libres nuestros
+      setTimeout(()=>openOurFoulTLModal(null,action),120);
     }
-    // Trigger rival TL picker
-    const _rp=m.rivalPlayers||[];
-    const isTech=(action==="ftech"||action==="funsport"||action==="fdq");
-    if(_rp.length>0){setTimeout(()=>openFoulTLModal("team",isTech,action),120);}
-    else{setTimeout(()=>openTeamTLModal("team",isTech,action),120);}
+    const entry={pid:"rival-team",action,pts,q:live.q,clockAt:live.clockSec,
+      desc:(pts>0?"Rival +"+pts+" pts":_ACTLABELS[action]||action)};
+    live.log=[...(live.log||[]),entry].slice(-80);
+  } else {
+    if(pts>0)live.qScores[qi][0]=(live.qScores[qi][0]||0)+pts;
+    if(isFoulAction){
+      if(!live.teamFouls)live.teamFouls=[0,0,0,0,0];
+      live.teamFouls[qi]=(live.teamFouls[qi]||0)+1;
+      _checkBonusEnter(m,qi);
+      // Parada de reloj con falta (v1.6.13 . B-38) si el partido lo tiene activado
+      if(m.stopOnFoul&&live.clockRunning){
+        live.clockRunning=false;clearInterval(_liveTimer);_liveTimer=null;
+        toast("⏱ Reloj parado por falta");
+      }
+      // Trigger rival TL picker
+      const _rp=m.rivalPlayers||[];
+      const isTech=(action==="ftech"||action==="funsport"||action==="fdq");
+      if(_rp.length>0){setTimeout(()=>openFoulTLModal("team",isTech,action),120);}
+      else{setTimeout(()=>openTeamTLModal("team",isTech,action),120);}
+    }
+    const entry={pid:"team",action,pts,q:live.q,clockAt:live.clockSec,
+      desc:_ACTLABELS[action]||(pts>0?"+"+pts+" pts":action)};
+    live.log=[...(live.log||[]),entry].slice(-80);
   }
-  const pL=m.quarters===4?"Q":"P";
-  const entry={pid:"team",action,pts,q:live.q,clockAt:live.clockSec,
-    desc:_ACTLABELS[action]||(pts>0?"+"+pts+" pts":action)};
-  live.log=[...(live.log||[]),entry].slice(-80);
   _syncLiveQ(m);save();render();
 }
 // ── Team-level TL modal (when no individual rival players registered) ──
@@ -8215,8 +8252,18 @@ function deleteLogEntry(idx){
   log.splice(idx,1);
   _syncLiveQ(m);save();render();toast("↩️ Acción eliminada");
 }
+// v2-live . B-SUB1: las sustituciones (de cualquier equipo) solo son legales
+// con balon muerto. Si el reloj esta corriendo cuando se confirma un cambio,
+// lo paramos automaticamente y avisamos.
+function _stopClockForSub(m){
+  if(m&&m.live&&m.live.clockRunning){
+    m.live.clockRunning=false;clearInterval(_liveTimer);_liveTimer=null;
+    toast("⏱ Reloj parado — sustitución con balón en juego");
+  }
+}
 function subPlayer(inId,outId){
   const m=mById(S.teamId,S.matchId);if(!m||!m.live)return;
+  _stopClockForSub(m);
   // v1.8.0: tracking de minutos y +/- antes de modificar onCourt
   if(outId)_trackExit(m,outId);
   _trackEnter(m,inId);
@@ -8386,6 +8433,7 @@ function setStatsView(view){
 }
 function subRivalPlayer(inId,outId){
   const m=mById(S.teamId,S.matchId);if(!m||!m.live)return;
+  _stopClockForSub(m);
   if(outId===null){
     if(!m.live.rivalOnCourt.includes(inId))m.live.rivalOnCourt.push(inId);
   } else {
