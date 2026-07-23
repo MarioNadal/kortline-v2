@@ -4515,7 +4515,7 @@ function saveInjury(mid,pid){
   const srcEl=document.getElementById(mid+"-src");
   const originId=(origin==="training"||origin==="match")&&srcEl?srcEl.value||"":"";
   const originLabel=srcEl&&srcEl.selectedOptions&&srcEl.selectedOptions[0]&&srcEl.value?srcEl.selectedOptions[0].textContent:"";
-  const injNotesVal=document.getElementById(mid+"-notes")?.value.trim()||"";
+  const injNotesVal=document.getElementById(mid+"-notes")?.value.trim()||"";applyInjuryToSessions(tid,pid,startDate,null,injNotesVal);
   // Preserva el snapshot si la fecha no cambia; recalcula si es nueva lesión o cambió la fecha.
   let snapshotPct,snapshotWasAtRisk;
   if(prev&&prev.active&&prev.startDate===startDate&&typeof prev.snapshotPct==="number"){
