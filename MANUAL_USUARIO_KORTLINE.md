@@ -15,7 +15,7 @@
 5. [Lesiones 🚑](#5-lesiones-)
 6. [Pase de lista (entrenamiento)](#6-pase-de-lista-entrenamiento)
 7. [Día de partido](#7-día-de-partido)
-8. [Shot Chart (próximamente en v2.0)](#8-shot-chart-próximamente-en-v20)
+8. [Shot Chart](#8-shot-chart)
 9. [Estadísticas](#9-estadísticas)
 10. [Backup y datos](#10-backup-y-datos)
 11. [Tips Pro](#11-tips-pro)
@@ -320,8 +320,10 @@ Equipo → **Partidos** → **＋ Añadir partido**:
 |--------|---------|----------|
 | 📊 Estadísticas del rival | OFF | Permite anotar stats post-partido jugador a jugador del rival (requiere registrar sus jugadores) |
 | 👥 Solo stats del equipo | OFF | No registra stats individuales, solo totales |
+| ⏱ Reloj se para con falta | Según categoría | FIBA: el reloj se detiene siempre que se pita una falta. También se para automáticamente en cada sustitución y tiempo muerto |
+| 🎯 Modo Shot Chart <sup>PRO</sup> | OFF | Cada tiro de campo (+2/+3, anotado o fallado) abre la cancha para tocar la zona exacta. Genera el mapa de tiros del partido |
 
-> Otros toggles relacionados con el seguimiento en vivo (reloj que se para con falta, modo Shot Chart) llegarán con la v2.0. En v1.0.0 estos no aparecen.
+> Estos toggles configuran el **partido en vivo** (sección 7.4). Si no activas el live game, el partido se sigue pudiendo anotar a mano desde el detalle (sección 7.3).
 
 ### 7.2 Convocatoria
 
@@ -445,13 +447,59 @@ Campo libre para escribir el resumen del partido, comentarios sobre el rival, aj
 
 Botón **📤** en el header del detalle. Genera un mensaje de WhatsApp con el marcador, los parciales por cuarto y un mini-resumen de la convocatoria.
 
-> El seguimiento en vivo del partido (scoreboard live, faltas en directo, tiempos muertos, quinteto en pista, shot chart en tiempo real) está reservado para **v2.0**. En v1.0.0 el flujo es: convocar, jugar, abrir el detalle al terminar y anotar el resultado por cuartos a mano.
+> Esto es el flujo **manual** (anotar a mano al terminar). Si prefieres seguir el partido en directo desde el banquillo — marcador, faltas, sustituciones, tiempos muertos, shot chart — usa el **partido en vivo** de la sección 7.4. Ambos flujos son compatibles: lo anotado en vivo rellena automáticamente el resultado por cuartos de esta pantalla.
+
+### 7.4 Partido en vivo (marcador en directo)
+
+Si al crear el partido activaste los toggles de la sección 7.1, en la home verás el botón **▶ Empezar partido** en lugar de "✏️ Anotar partido". Te lleva directo al marcador en vivo tras confirmar la convocatoria.
+
+#### 7.4.1 Marcador y reloj
+
+El reloj del cuarto se controla con ▶/⏸. Si activaste ⏱ *Reloj se para con falta*, se para solo cada vez que pitas una falta — y **siempre** se para automáticamente al hacer una sustitución o pedir un tiempo muerto, aunque el toggle esté desactivado. Puedes rebobinar o reiniciar el reloj del cuarto si te equivocas.
+
+#### 7.4.2 Faltas y bonus
+
+Cada falta se asigna a un jugador (o al equipo, si no tienes plantilla del rival registrada — ver 7.4.5) y puede ser personal, técnica, antideportiva o descalificante. A partir de la **5ª falta de equipo en el cuarto** entráis en bonus FIBA: la siguiente falta del rival da automáticamente 2 tiros libres, y verás un aviso en pantalla.
+
+Al pitar una falta se abre el selector de **tiros libres**: eliges quién tira (si hay rival registrado) y cuántos tiros (0/1/2/3), con el número sugerido ya marcado según el tipo de falta y si hay bonus.
+
+#### 7.4.3 Sustituciones
+
+Se hacen con balón muerto. Si el reloj estaba corriendo al confirmar el cambio, Kortline **lo para automáticamente** y te avisa — no hace falta acordarse de pausarlo antes de sustituir.
+
+#### 7.4.4 Descalificación automática
+
+Un jugador queda descalificado al llegar a 5 faltas personales, 2 técnicas, 2 antideportivas, o la combinación de 1 técnica + 1 antideportiva. En ese momento se abre un aviso **obligatorio** (no se puede cerrar sin elegir) para sacarlo y meter a un jugador del banquillo que no esté también descalificado. Si el banquillo está agotado, puedes confirmar seguir con menos jugadores en pista.
+
+#### 7.4.5 Modo equipo (sin plantilla del rival)
+
+Si no registraste los jugadores del rival en la convocatoria, las canastas y faltas del rival se anotan como acciones de equipo genéricas ("Equipo, sin jugador concreto"). Kortline sabe distinguir si estás mirando la pestaña de tu equipo o la del rival y suma la falta o los puntos al lado correcto — no hace falta cambiar de pantalla para anotar al rival.
+
+#### 7.4.6 Tiempos muertos
+
+Botón ⏱ Tiempo Muerto: elige qué equipo lo pide. El límite es de **2 tiempos muertos por mitad** y **1 por prórroga** (regla FIBA); el botón se desactiva solo cuando se agotan. Al confirmarlo se para el reloj y aparece un aviso de cuenta atrás de 60 segundos.
+
+#### 7.4.7 Shot Chart
+
+Con el toggle 🎯 Modo Shot Chart activado, cada vez que anotas un tiro de campo (entre o falle) se abre la cancha para tocar la zona exacta donde se ha tirado — jugador a jugador o en modo equipo. Con esto Kortline construye el mapa de tiros del partido (ver sección 8).
+
+#### 7.4.8 Estadísticas en directo
+
+Botón 📊 en el marcador: abre la tabla de estadísticas del partido en tiempo real, con toggle para ver tu equipo o el rival. Si giras el móvil durante el partido en vivo, la pantalla pasa automáticamente a modo lectura de estadísticas a pantalla completa — el resto de la app funciona solo en vertical, pero el live game permite este modo horizontal de consulta.
+
+Al terminar el partido, todo lo anotado en vivo (resultado por cuartos, estadísticas, faltas) queda disponible igual que si lo hubieras introducido a mano en la sección 7.3.
 
 ---
 
-## 8. Shot Chart (próximamente en v2.0)
+## 8. Shot Chart
 
-El mapa de tiros en directo durante el partido forma parte del seguimiento en vivo, que está reservado para v2.0. Mientras tanto, en v1.0.0 puedes consultar el mapa de tiros agregado de la temporada en la pantalla de Estadísticas si tienes partidos antiguos con datos.
+El mapa de tiros por zona está disponible durante el **partido en vivo** (sección 7.4.7), activando el toggle 🎯 Modo Shot Chart al crear el partido.
+
+Cada vez que anotas un tiro de campo (+2 o +3, entre o falle) se abre la cancha: toca la zona exacta donde se ha producido el tiro para registrarlo. Funciona tanto para tiros de un jugador concreto como en modo equipo (sección 7.4.5, cuando no tienes plantilla del rival registrada).
+
+El mapa resultante — zonas más calientes, porcentaje de acierto por zona — se puede consultar desde el resumen del partido al terminar, y de forma agregada en la pantalla de Estadísticas (sección 9) si tienes varios partidos con datos de shot chart.
+
+> Si no activas el toggle, el partido se sigue pudiendo anotar con total normalidad (a mano o en vivo) — el shot chart es un extra opcional, no obligatorio.
 
 ## 9. Estadísticas
 
@@ -551,11 +599,11 @@ Con dos botones:
 | Problema | Causa probable | Solución |
 |----------|----------------|----------|
 | **Foto da "Almacenamiento lleno"** | autobackup duplicador antiguo | Ajustes → Copia de seguridad → 🗑 Borrar autobackup antiguo |
-| **El botón de la home dice "Anotar partido" en vez de "Empezar partido"** | en v1.0.0 el live game está desactivado | Es lo esperado. El seguimiento en vivo llega en v2.0; en v1.0.0 anotas resultado y stats a mano desde el detalle |
-| **Veo el botón 📍 Mapa de tiros pero está vacío** | partido sin shots registrados o partido nuevo | El mapa requiere datos del seguimiento en vivo. En v1.0.0 sólo verás mapas de partidos antiguos que tuvieran shots; los nuevos no generan datos hasta v2.0 |
+| **El botón de la home dice "Anotar partido" en vez de "Empezar partido"** | los toggles de partido en vivo (7.1) no estaban activados al crear el partido | Edita el partido y activa ⏱/🎯, o crea uno nuevo con esos toggles ON para usar el marcador en directo (sección 7.4) |
+| **Veo el botón 📍 Mapa de tiros pero está vacío** | partido sin shots registrados | Activa 🎯 Modo Shot Chart al crear el partido (sección 7.1) y regístralo durante el live game (sección 7.4.7) |
 | **Carlos en stats aparece como "I."** | nombre empieza con inicial | Edita el jugador y separa el nombre: "Javier Rodríguez" en lugar de "I. Javier Rodríguez" |
 | **No me reconoce el equipo al abrir la app** | autoasignación bloqueada | Entra a Equipos y selecciona el equipo; queda fijado para siguientes sesiones |
-| **He girado el móvil y veo un overlay** | en v1.0.0 toda la app es vertical | Vuelve a vertical y todo continúa donde lo dejaste |
+| **He girado el móvil y veo un overlay** | fuera del partido en vivo, toda la app es vertical | Vuelve a vertical y todo continúa donde lo dejaste. Solo el partido en vivo permite horizontal (para leer stats a pantalla completa) |
 | **Pierdo cambios al cerrar el modal de un jugador** | el dirty tracking pide confirmación | Pulsa "💾 Guardar y salir" en el aviso de cambios sin guardar |
 
 ---
@@ -585,16 +633,13 @@ Con dos botones:
 
 ## Sobre esta versión
 
-Este manual corresponde a **v1.0.0** (primera estable pública). Las próximas versiones añadirán:
+Este manual corresponde a **kortline-v2**, rama de desarrollo del marcador en vivo. Las próximas versiones añadirán:
 
-- **v2.0.0** — seguimiento en vivo del partido completo (scoreboard live, faltas en directo, tiempos muertos, quinteto en pista, shot chart real-time).
 - **v3.0.0** — sincronización en la nube con Firebase para colaboración entre varios coaches del mismo equipo.
 
 Para detalles y plan, ver [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
-_Kortline · Hecho con 🧡 para CB Jaca · v1.0.0_
+_Kortline · Hecho con 🧡 para CB Jaca_
 _Desarrollado por Mario Nadal Ara_
-                                                                                                                                                                                                                                                                                                                                                                                 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           

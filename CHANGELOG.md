@@ -3,6 +3,39 @@
 Todos los cambios notables del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · Versionado según [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] · kortline-v2 · rama `main` (marcador en vivo)
+
+> **Nota de alcance:** esta entrada reconstruye, a partir del historial de commits, el trabajo de marcador en vivo hecho en este repo (`kortline-v2`) desde su creación (15 jun) hasta hoy, que nunca se había volcado al CHANGELOG. Está agrupado por tema, no commit a commit — si algo está incompleto o mal descrito, decímelo y lo corrijo.
+
+### Añadido
+
+- **Marcador en vivo completo**, activo por defecto en este repo (`FEATURE_LIVE_GAME=true`, a diferencia de `kortline-app` v1): reloj con parada automática en falta/sustitución/tiempo muerto, faltas individuales y de equipo con bonus FIBA (5 faltas de equipo → 2 TL), selector de tiros libres con sugerencia de cantidad según tipo de falta, sustituciones, tiempos muertos (2 por mitad, 1 por prórroga) y descalificación automática (5 personales / 2 técnicas / 2 antideportivas / técnica+antideportiva) con sustitución forzosa obligatoria.
+- **Modo "acciones de equipo"**: cuando el rival no tiene plantilla registrada, las faltas y canastas del rival se anotan como acciones de equipo genéricas, correctamente separadas de las de tu propio equipo según qué lado estés mirando (fix de una regresión donde siempre escribía en el marcador propio).
+- **Shot Chart**: toggle "Modo Shot Chart" al crear el partido; cada tiro de campo abre la cancha para marcar la zona, en modo jugador individual y en modo equipo.
+- **Recortador de foto de jugador**: drag + pinch-zoom manual al asignar foto a un jugador, con clamp de posición/escala para evitar bordes negros.
+- **Convocatoria**: nombre de club y equipo visibles, soporte para múltiples entrenadores ayudantes, toggles individuales por entrenador/ayudante en los paneles de compartir.
+- **Datos de demo**: `?demo` en la URL carga un partido de prueba en curso (12 jugadores, Q3, estadísticas reales) sin tocar los datos reales del club — pensado para probar el live game sin riesgo.
+
+### Corregido
+
+- **Lesiones · snapshot de asistencia incorrecto al editar la fecha de inicio.** `saveInjury()` calculaba el % de asistencia previo a la lesión (el que congela el riesgo FEB) **antes** de limpiar las marcas `excused/injury` que el guardado anterior había dejado en los días que volvían a quedar fuera del rango al mover la fecha de inicio hacia adelante. Esos días se contaban como ausencia, dando un % falso y un aviso de riesgo FEB incorrecto. `applyInjuryToSessions()` ahora se ejecuta primero. Verificado con caso reproducido: lesión creada el 05/06, editada al 08/06 → snapshot pasa de 0% (falso, en riesgo) a 100% (correcto).
+- Centrado del nombre y contenedor del equipo visitante en el marcador en vivo (varias iteraciones).
+- `buildEventoText` no aplicaba las opciones ni la lista de entrenadores al generar el texto de convocatoria para compartir.
+- Las notas del entrenador en el pase de lista se copiaban de un día a otro por error.
+- Checkboxes de entrenadores en convocatoria: no marcados por defecto, y fix de un bug en su estado.
+- Carga de la demo (`?demo`) corregida.
+
+### Infraestructura
+
+- `app.css`/`app.js` (una separación de archivos que se probó brevemente) se eliminaron; la app vuelve a ser un único `index.html` sin build, como marca el stack del proyecto.
+- Versión interna bumpeada a `v2.0.0-dev` en el service worker.
+
+### Pendiente
+
+- El campo `version` del JSON de export (`exportBackup()`) sigue en `"1.0.0"`, desincronizado del `v2.0.0-dev` real. No se ha tocado en esta pasada — pendiente decidir el esquema de versión definitivo para kortline-v2 antes de corregirlo.
+
+---
+
 ## [1.0.0] — 2026-05-13 · Primera versión estable pública
 
 **Reset semántico desde v1.8.24.** Toda la serie v1.8.x ha sido pre-release de desarrollo interno. v1.0.0 es la primera versión estable pública del proyecto. A partir de aquí semver estricto: lo siguiente es v1.0.1 (patch) o v1.1.0 (minor); no se vuelve a reescribir numeración. Ver `ROADMAP.md` para la estrategia completa.
