@@ -1010,7 +1010,7 @@ window._doDQSub=function(inId,outId,isRival){
     if(inId){
       live.rivalOnCourt=(live.rivalOnCourt||[]).map(id=>id===outId?inId:id);
     } else {
-      live.rivalOnCourt=(live.rivalOnCourt||[]).filter(id=>id!==outId);
+      live.rivalOnCourt=(live.rivalOnCourt||[]).filter(id=>id!==outId);toast("⛔ Rival sin sustituto · banquillo agotado");
     }
   } else {
     if(inId){
@@ -1696,7 +1696,7 @@ function _startTmOverlay(team,who){
     if(_tmSec<=0){
       clearInterval(_tmTimer);_tmTimer=null;
       document.getElementById("m-tm-overlay")?.remove();
-      _clockAlert("▶ ¡Reanudar!",1800);
+      render();_clockAlert("▶ ¡Reanudar!",1800);
     }
   },1000);
 }
@@ -1817,7 +1817,7 @@ function _tmCancelSub(){
 function _resumeFromTm(){
   clearInterval(_tmTimer);_tmTimer=null;
   document.getElementById("m-tm-overlay")?.remove();
-  _clockAlert("▶ ¡A jugar!",1500);
+  render();_clockAlert("▶ ¡A jugar!",1500);
 }
 const DAYSF=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 const CATEGORIES=["Escuela","Benjamín","Alevín","Infantil","Cadete","Junior","Senior","3x3","Otro"];
@@ -7530,7 +7530,7 @@ function liveAction(pid,action,pts){
   const qi=(live.q||1)-1;
   _ensureQSlot(live,qi);
   if(pts>0)live.qScores[qi][0]=(live.qScores[qi][0]||0)+pts;
-  if(action==="foul"||action==="ftech"||action==="funsport"||action==="fdq"){if(!live.teamFouls)live.teamFouls=[0,0,0,0,0];live.teamFouls[qi]=(live.teamFouls[qi]||0)+1;_checkBonusEnter(m,qi);}
+  if(action==="foul"||action==="ftech"||action==="funsport"||action==="fdq"){if(!live.teamFouls)live.teamFouls=[0,0,0,0,0,0];live.teamFouls[qi]=(live.teamFouls[qi]||0)+1;_checkBonusEnter(m,qi);}
   }
   // v1.7.5: pname soporta jugador rival también
   const pname=isRivalPid
@@ -7756,7 +7756,7 @@ function liveTeamAction(action, pts){
   if(isRivalSide){
     if(pts>0)live.qScores[qi][1]=(live.qScores[qi][1]||0)+pts;
     if(isFoulAction){
-      if(!live.rivalFouls)live.rivalFouls=[0,0,0,0,0];
+      if(!live.rivalFouls)live.rivalFouls=[0,0,0,0,0,0];
       live.rivalFouls[qi]=(live.rivalFouls[qi]||0)+1;
       if(m.stopOnFoul&&live.clockRunning){
         live.clockRunning=false;clearInterval(_liveTimer);_liveTimer=null;
@@ -7771,7 +7771,7 @@ function liveTeamAction(action, pts){
   } else {
     if(pts>0)live.qScores[qi][0]=(live.qScores[qi][0]||0)+pts;
     if(isFoulAction){
-      if(!live.teamFouls)live.teamFouls=[0,0,0,0,0];
+      if(!live.teamFouls)live.teamFouls=[0,0,0,0,0,0];
       live.teamFouls[qi]=(live.teamFouls[qi]||0)+1;
       _checkBonusEnter(m,qi);
       // Parada de reloj con falta (v1.6.13 . B-38) si el partido lo tiene activado
@@ -8391,7 +8391,7 @@ function openSubModal(inId){
   const players=pl(S.teamId);
   const convP=[...players].filter(p=>convIds.includes(p.id)).sort((a,b)=>(a.number||99)-(b.number||99));
   const courtP=(m.live.onCourt||[]).map(id=>convP.find(p=>p.id===id)).filter(Boolean);
-  const inP=convP.find(p=>p.id===inId);
+  const inP=convP.find(p=>p.id===inId);if(inP&&_isDQ(m.live.stats[inP.id]||{})){toast("⛔ Jugador descalificado, no puede entrar");return;}
   document.getElementById("m-sub")?.remove();
   const el=document.createElement("div");el.id="m-sub";
   el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
