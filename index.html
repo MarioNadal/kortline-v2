@@ -866,6 +866,80 @@ function _getPlusMinus(m,pid){
   }
   return total;
 }
+/* ═══════════════════════════════════════
+   KPIs DE EQUIPO (Planificacion_Anual_Cadete_Junior_2025-2026 §7)
+   % triple sobre tiros de campo y rebotes/pérdidas salen de live.stats
+   (siempre disponibles). Transición, bloqueo directo y 2ª oportunidad salen
+   de live.plays, que solo existe en partidos con el toggle "🎬 Tipo de
+   jugada" activado — de ahí el flag hasPlayTypeData para avisar en la UI.
+═══════════════════════════════════════ */
+function computeTeamKPIs(matchList){
+  let p2m=0,p2a=0,p3m=0,p3a=0,ro=0,rd=0,to=0,stl=0;
+  let transPts=0,transPoss=0,bdPts=0,bdPoss=0,secondChancePts=0,secondChanceCount=0;
+  let hasPlayTypeData=false,matchesWithPlayType=0;
+  matchList.forEach(mm=>{
+    const st=mm.live?.stats||{};
+    Object.values(st).forEach(s=>{
+      p2m+=s.p2m||0;p2a+=s.p2a||0;p3m+=s.p3m||0;p3a+=s.p3a||0;
+      ro+=s.ro||0;rd+=s.rd||0;to+=s.to||0;stl+=s.stl||0;
+    });
+    const plays=mm.live?.plays;
+    if(!plays||!plays.length)return;
+    hasPlayTypeData=true;matchesWithPlayType++;
+    const ordered=[...plays].sort((a,b)=>(a.ts||0)-(b.ts||0));
+    ordered.forEach(pl=>{
+      if(pl.type!=="shot")return;
+      if(pl.playType==="transicion"){transPoss++;if(pl.made)transPts+=pl.pts;}
+      else if(pl.playType==="bloqueo"){bdPoss++;if(pl.made)bdPts+=pl.pts;}
+    });
+    ordered.forEach((pl,i)=>{
+      if(pl.type!=="rebound"||pl.kind!=="ro")return;
+      secondChanceCount++;
+      const next=ordered.slice(i+1).find(x=>x.type==="shot");
+      if(next&&next.made)secondChancePts+=next.pts;
+    });
+  });
+  const fga=p2m+p2a+p3m+p3a;
+  const p3att=p3m+p3a; // intentos de 3 (anotados+fallados) — numerador del % del plan anual
+  const pct3ofFGA=fga>0?Math.round(p3att/fga*100):0;
+  const bdPPP=bdPoss>0?(bdPts/bdPoss):0;
+  return{
+    fga,pct3ofFGA,p3m,p3a,p3att,
+    ro,rd,secondChancePts,secondChanceCount,
+    to,stl,
+    transPts,transPoss,
+    bdPts,bdPoss,bdPPP,
+    hasPlayTypeData,matchesWithPlayType,totalMatches:matchList.length
+  };
+}
+// Panel visual de KPIs de equipo, a partir de computeTeamKPIs().
+function teamKPIHtml(k){
+  function card(label,value,sub,color){
+    return`<div style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px;flex:1;min-width:0">
+      <div style="font-family:var(--font-d);font-weight:900;font-size:26px;color:${color||"var(--tx)"};line-height:1">${value}</div>
+      <div style="font-size:10px;color:var(--td);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">${label}</div>
+      ${sub?`<div style="font-size:11px;color:var(--tm);margin-top:3px">${sub}</div>`:""}
+    </div>`;
+  }
+  if(k.totalMatches===0){
+    return`<div class="empty"><div style="font-size:40px;margin-bottom:10px;opacity:.4">📈</div><div style="font-size:14px;color:var(--tm)">Sin partidos con estadísticas en este período.</div></div>`;
+  }
+  const basicRow=`<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+    ${card("% triple / tiros de campo",k.fga>0?k.pct3ofFGA+"%":"—","§7 del plan anual · "+k.p3att+" de "+k.fga+" tiros de campo fueron triples ("+k.p3m+" anotados)","var(--orange)")}
+    ${card("Rebotes ofensivos",k.ro,"totales en "+k.totalMatches+" partido"+(k.totalMatches===1?"":"s"),"#a855f7")}
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+    ${card("Puntos 2ª oportunidad",k.secondChancePts,k.secondChanceCount+" rebote"+(k.secondChanceCount===1?"":"s")+" ofensivo"+(k.secondChanceCount===1?"":"s")+" seguido de tiro","#22c55e")}
+    ${card("Pérdidas",k.to,"total del equipo · no distingue si fue en la salida rápida","#ef4444")}
+  </div>`;
+  const playTypeRow=k.hasPlayTypeData?`<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+    ${card("Puntos en transición",k.transPts,k.transPoss+" tiro"+(k.transPoss===1?"":"s")+" de campo marcado"+(k.transPoss===1?"":"s")+" como transición","#3b82f6")}
+    ${card("Eficiencia bloqueo directo",k.bdPoss>0?k.bdPPP.toFixed(2)+" PPP":"—",k.bdPoss+" posesion"+(k.bdPoss===1?"":"es")+" de bloqueo directo · "+k.bdPts+" puntos","#06b6d4")}
+  </div>
+  <div style="font-size:11px;color:var(--tm);padding:8px 10px;background:var(--s2);border-radius:8px;border:1px solid var(--border);margin-bottom:8px">🎬 Datos de ${k.matchesWithPlayType} de ${k.totalMatches} partido${k.totalMatches===1?"":"s"} (los que tenían el toggle "Tipo de jugada" activado).</div>`
+    :`<div style="text-align:center;padding:18px 14px;background:var(--s2);border:1px dashed var(--border);border-radius:10px;color:var(--tm);font-size:12px;line-height:1.6">🎬 Activa el toggle <b style="color:var(--tx)">Tipo de jugada</b> al crear un partido para ver aquí puntos en transición y eficiencia del bloqueo directo.</div>`;
+  return basicRow+playTypeRow;
+}
 // Eficiencia FEB simplificada (sin faltas recibidas ni tapones recibidos por no trackearse)
 // EFF = pts + (ro+rd) + ast + stl + blk - intentos_fallados - perdidas - faltas_cometidas
 function _calcEFF(st){
@@ -3293,9 +3367,12 @@ function stats(){
       const _rows=players.filter(p=>matchAgg[p.id]).sort((a,b)=>(matchAgg[b.id]?.pts||0)-(matchAgg[a.id]?.pts||0)).map(p=>{
         const a=matchAgg[p.id];
         const ppp=a.pj>0?(a.pts/a.pj).toFixed(1):"—";
-        const t2pct=a.p2a>0?Math.round(a.p2m/a.p2a*100)+"%":"—";
-        const t3pct=a.p3a>0?Math.round(a.p3m/a.p3a*100)+"%":"—";
-        const tlpct=a.p1a>0?Math.round(a.p1m/a.p1a*100)+"%":"—";
+        // Fix (2026-08-02): usaba p2m/p2a (aciertos entre FALLOS, no intentos) —
+        // podía salir >100%. El intento total es makes+misses, igual que en el
+        // resto de la app (ver comentario "renderers calculan intentos como p1m+p1a").
+        const t2pct=(a.p2m+a.p2a)>0?Math.round(a.p2m/(a.p2m+a.p2a)*100)+"%":"—";
+        const t3pct=(a.p3m+a.p3a)>0?Math.round(a.p3m/(a.p3m+a.p3a)*100)+"%":"—";
+        const tlpct=(a.p1m+a.p1a)>0?Math.round(a.p1m/(a.p1m+a.p1a)*100)+"%":"—";
         const avgMin=a.pj>0?_fmtMin(Math.round(a.minSec/a.pj)):"—";
         const avgEff=a.pj>0?(a.eff/a.pj).toFixed(1):"—";
         const effColor=a.eff>0?"#22c55e":a.eff<0?"#ef4444":"var(--td)";
@@ -3371,12 +3448,13 @@ function stats(){
       <button class="view-tab ${view==="table"?"on":""}" onclick="S.statsView='table';render()">📋 Tabla</button>
       <button class="view-tab ${view==="charts"?"on":""}" onclick="S.statsView='charts';render()">📊 Gráficas</button>
       <button class="view-tab ${view==="matches"?"on":""}" onclick="S.statsView='matches';render()">🏀 Partidos</button>
+      <button class="view-tab ${view==="team"?"on":""}" onclick="S.statsView='team';render()">📈 Equipo</button>
     </div>
     <div class="export-bar">
       <button class="btn-xpdf" onclick="exportPDF()">📄 PDF</button>
       <button class="btn-xxls" onclick="exportExcel()">📊 Excel</button>
     </div>
-    ${view==="charts"?chartsHTML:view==="matches"?matchesHTML:`
+    ${view==="charts"?chartsHTML:view==="matches"?matchesHTML:view==="team"?teamKPIHtml(computeTeamKPIs(matchList)):`
       <div class="ptabs">
         <button class="ptab ${f==="all"?"on":""}" onclick="S.sf='all';render()">Todos (${pst.length})</button>
         <button class="ptab ${f==="risk"?"on":""}" onclick="S.sf='risk';render()">⚠️ Riesgo (${riskCnt})</button>
@@ -7796,9 +7874,19 @@ function liveAction(pid,action,pts){
   // Tipo de jugada (Planificacion_Anual_Cadete_Junior_2025-2026 §7): solo se
   // etiquetan tiros de campo propios (no rival, no TL). Base para los KPIs
   // de equipo (transición, bloqueo directo, % triple sobre tiros de campo).
+  // live.plays es independiente de live.log (que se recorta a 80 entradas para
+  // la UI en directo) — aquí no se recorta, porque hace falta el partido
+  // completo para calcular los KPIs al terminar.
   if(m.trackPlayType&&!isRivalPid&&(action==="p2m"||action==="p3m"||action==="p2a"||action==="p3a")){
     if(!live.plays)live.plays=[];
-    live.plays.push({pid,action,pts,made:(action==="p2m"||action==="p3m"),value:(action==="p3m"||action==="p3a")?3:2,playType:live.playType||"estatico",q:live.q,clockAt:live.clockSec,ts:Date.now()});
+    live.plays.push({type:"shot",pid,action,pts,made:(action==="p2m"||action==="p3m"),value:(action==="p3m"||action==="p3a")?3:2,playType:live.playType||"estatico",q:live.q,clockAt:live.clockSec,ts:Date.now()});
+  }
+  // Rebote ofensivo propio: se guarda también en live.plays (sin recorte) para
+  // poder calcular puntos de 2ª oportunidad — el siguiente tiro de campo propio
+  // tras un rebote ofensivo, si entra, cuenta como puntos de 2ª oportunidad.
+  if(m.trackPlayType&&!isRivalPid&&action==="ro"){
+    if(!live.plays)live.plays=[];
+    live.plays.push({type:"rebound",kind:"ro",pid,q:live.q,clockAt:live.clockSec,ts:Date.now()});
   }
   // v1.6.13 · B-47: descalificación considera personales + técnicas + antideportivas + descalificantes
   // v1.7.5: tras la falta, comprobar DQ en ambos equipos y encolar sub forzoso si está en pista
@@ -8032,7 +8120,11 @@ function liveTeamAction(action, pts){
     // Tipo de jugada — igual que en liveAction, solo tiros de campo propios.
     if(m.trackPlayType&&(action==="p2m"||action==="p3m"||action==="p2a"||action==="p3a")){
       if(!live.plays)live.plays=[];
-      live.plays.push({pid:"team",action,pts,made:(action==="p2m"||action==="p3m"),value:(action==="p3m"||action==="p3a")?3:2,playType:live.playType||"estatico",q:live.q,clockAt:live.clockSec,ts:Date.now()});
+      live.plays.push({type:"shot",pid:"team",action,pts,made:(action==="p2m"||action==="p3m"),value:(action==="p3m"||action==="p3a")?3:2,playType:live.playType||"estatico",q:live.q,clockAt:live.clockSec,ts:Date.now()});
+    }
+    if(m.trackPlayType&&action==="ro"){
+      if(!live.plays)live.plays=[];
+      live.plays.push({type:"rebound",kind:"ro",pid:"team",q:live.q,clockAt:live.clockSec,ts:Date.now()});
     }
   }
   _syncLiveQ(m);save();render();

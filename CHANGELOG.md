@@ -3,6 +3,22 @@
 Todos los cambios notables del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · Versionado según [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] · kortline-v2 · Panel de Estadísticas de equipo (2026-08-02)
+
+### Añadido
+
+- Nueva pestaña **📈 Equipo** en la pantalla de Estadísticas (junto a Tabla/Gráficas/Partidos), con los KPIs del plan anual (§7):
+  - **% de tiros de 3 sobre el total de tiros de campo** — siempre disponible, no depende del toggle de tipo de jugada.
+  - **Rebotes ofensivos** y **puntos de 2ª oportunidad** — los rebotes salen de las stats normales; los puntos de 2ª oportunidad se infieren de la secuencia de jugadas (rebote ofensivo → siguiente tiro de campo propio, si entra cuenta).
+  - **Puntos en transición** y **eficiencia del bloqueo directo (puntos por posesión)** — solo en partidos con el toggle 🎬 Tipo de jugada activado; si ningún partido del período lo tiene, se muestra un aviso en vez de datos vacíos.
+  - **Pérdidas** — conteo total del equipo, marcado como aproximado (no distingue si fue en la salida rápida, ver informe de huecos).
+  - Respeta el mismo filtro de mes que el resto de la pantalla de Estadísticas.
+- `live.plays` ahora también registra los rebotes ofensivos propios (no solo tiros), sin recorte de tamaño (a diferencia de `live.log`, que se recorta a 80 entradas para la UI en directo) — necesario para poder calcular los puntos de 2ª oportunidad del partido completo.
+
+### Corregido
+
+- **T2%/T3%/TL% de la tabla "Estadísticas de partidos" podían superar el 100%.** Dividían aciertos entre fallos (`p2m/p2a`) en vez de aciertos entre intentos totales (`p2m/(p2m+p2a)`). Encontrado revisando esta zona del código, corregido de paso.
+
 ## [Sin publicar] · kortline-v2 · Incidencias como toggle en Ajustes (2026-08-02)
 
 ### Cambiado
