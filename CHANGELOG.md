@@ -19,6 +19,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) ·
 
 - **T2%/T3%/TL% de la tabla "Estadísticas de partidos" podían superar el 100%.** Dividían aciertos entre fallos (`p2m/p2a`) en vez de aciertos entre intentos totales (`p2m/(p2m+p2a)`). Encontrado revisando esta zona del código, corregido de paso.
 
+## [Sin publicar] · kortline-v2 · MVP semanal + minutos reducidos (2026-08-02)
+
+### Añadido
+
+- **MVP de la semana**: card nueva en la pantalla de Equipo (🏆), con historial completo (fecha, jugador, nota opcional) accesible tocándola. Cierra el ciclo que describe `Mandamientos_CBJaca_2026-2027.docx` ("antes de anunciar el MVP del lunes..."). Guardado en `t.mvpHistory`.
+- **Minutos reducidos / banquillo** en convocatoria: botón 🪑 nuevo junto a ⭐ (titular) y (C) (capitán) en cada convocado, pensado como reflejo de una incidencia de nivel 2/3 (Mandamientos_CBJaca). Solo informativo — no restringe nada automáticamente en el live game. Se limpia solo si se quita al jugador de la convocatoria. Guardado en `m.reducedMinutes`.
+
 ## [Sin publicar] · kortline-v2 · Export PDF/Excel por pestaña (2026-08-02)
 
 ### Añadido

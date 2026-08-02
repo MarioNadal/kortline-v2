@@ -41,6 +41,7 @@ Para el manual de usuario, ver [`MANUAL_USUARIO_KORTLINE.md`](MANUAL_USUARIO_KOR
 - Vista de estadísticas en directo (cards en landscape, tabla en portrait) con toggle equipo propio / rival.
 - Selector de tipo de jugada (🧍 Estático · 🏃 Transición · 🧱 Bloqueo directo) en el panel de acciones — etiqueta cada tiro de campo propio. Se activa por partido con el toggle **🎬 Tipo de jugada** al crear/editar el partido (por defecto OFF).
 - Pestaña **📈 Equipo** en Estadísticas con los KPIs del plan anual: % de triple sobre tiros de campo, rebotes ofensivos, puntos de 2ª oportunidad, puntos en transición, eficiencia del bloqueo directo y pérdidas.
+- **MVP de la semana** (card en Equipo) y **minutos reducidos/banquillo** en convocatoria (🪑), pensados como cierre del ciclo semanal de `Mandamientos_CBJaca_2026-2027.docx`.
 
 **Lesiones:**
 - Marcar/editar/dar de alta una lesión por jugador, con origen (entreno/partido/fuera) y nota libre.
