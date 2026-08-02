@@ -13,7 +13,7 @@
 3. [Pantalla HOY](#3-pantalla-hoy)
 4. [Gestión de equipos y plantilla](#4-gestión-de-equipos-y-plantilla)
 5. [Lesiones 🚑](#5-lesiones-)
-   - 5.5 [Incidencias ⚠️](#55-incidencias-️-rama-featincidencias-jugador-no-mergeada-a-main-todavía)
+   - 5.5 [Incidencias ⚠️](#55-incidencias-️)
 6. [Pase de lista (entrenamiento)](#6-pase-de-lista-entrenamiento)
 7. [Día de partido](#7-día-de-partido)
 8. [Shot Chart](#8-shot-chart)
@@ -205,7 +205,7 @@ Tras el alta:
 
 Dentro del modal de jugador, un panel desplegable muestra el histórico (cuántas, días totales, orígenes). Útil para detectar patrones.
 
-### 5.5 Incidencias ⚠️ (rama `feat/incidencias-jugador`, no mergeada a `main` todavía)
+### 5.5 Incidencias ⚠️
 
 Registro de normas incumplidas (puntualidad, material, actitud, convivencia...), separado de Lesiones — esto es disciplinario, no médico. Basado en el sistema de escalado de `Mandamientos_CBJaca_2026-2027.docx`.
 

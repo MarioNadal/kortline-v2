@@ -13,7 +13,7 @@ Repositorio: [github.com/MarioNadal/kortline-v2](https://github.com/MarioNadal/k
 
 **En desarrollo activo · pre-release v2.0.0.** Sin tags/releases todavía — se sube directamente a `main` según se van cerrando piezas del live game.
 
-> **Rama activa ahora mismo: `feat/incidencias-jugador`** (no mergeada a `main`). Añade el módulo de Incidencias descrito abajo. Ver `CHANGELOG.md` para el detalle de lo implementado en esta rama y lo pendiente.
+> **Módulo de Incidencias mergeado a `main`** (2026-08-02, desde `feat/incidencias-jugador`). Ver `CHANGELOG.md` para el detalle.
 
 Para el plan de ramas y la relación con v1 (`kortline-app`) y v3 (Firebase), ver [`ROADMAP.md`](ROADMAP.md).
 Para el historial detallado, ver [`CHANGELOG.md`](CHANGELOG.md) *(nota: desactualizado respecto al trabajo de live game — pendiente de ponerse al día)*.
@@ -46,7 +46,7 @@ Para el manual de usuario, ver [`MANUAL_USUARIO_KORTLINE.md`](MANUAL_USUARIO_KOR
 - Congela el % de asistencia previo a la lesión (snapshot) para que el riesgo FEB no penalice al jugador mientras está lesionado.
 - Historial de lesiones por jugador (fecha inicio/fin, días, origen).
 
-**Incidencias (rama `feat/incidencias-jugador`):**
+**Incidencias:**
 - Registro de normas incumplidas por jugador (puntualidad, material, actitud, convivencia, otro), independiente de Lesiones.
 - Escalado automático 1ª vez / 2ª vez / 3ª vez / reincidencia grave según la tabla de `Mandamientos_CBJaca_2026-2027.docx`, con consecuencia sugerida editable.
 - Botón ⚠️ en la fila del jugador (pantalla Equipo) con contador de incidencias.

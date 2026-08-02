@@ -3,9 +3,9 @@
 Todos los cambios notables del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · Versionado según [SemVer](https://semver.org/lang/es/).
 
-## [Sin publicar] · rama `feat/incidencias-jugador` · no mergeada a main
+## [Sin publicar] · kortline-v2 · Incidencias (mergeado a `main` 2026-08-02)
 
-> Trabajo en curso a partir de la revisión de `Mandamientos_CBJaca_2026-2027.docx` (normas del jugador) y `Planificacion_Anual_Cadete_Junior_2025-2026.docx` (modelo de juego). Ver informe `Kortline_Revision_Estadisticas_Incidencias.docx` para el análisis completo de huecos. Este bloque documenta solo lo que ya está implementado en esta rama, pendiente de que Mario lo pruebe y apruebe el merge a `main`.
+> A partir de la revisión de `Mandamientos_CBJaca_2026-2027.docx` (normas del jugador) y `Planificacion_Anual_Cadete_Junior_2025-2026.docx` (modelo de juego). Ver informe `Kortline_Revision_Estadisticas_Incidencias.docx` para el análisis completo de huecos. Mergeado desde `feat/incidencias-jugador`, pendiente de que Mario lo pruebe en el móvil.
 
 ### Añadido
 
