@@ -3,6 +3,13 @@
 Todos los cambios notables del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · Versionado según [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] · kortline-v2 · Tipo de jugada como opción del partido (2026-08-02)
+
+### Cambiado
+
+- El selector de tipo de jugada (🧍 Estático · 🏃 Transición · 🧱 Bloqueo directo) del marcador en vivo ya no está siempre activo: ahora es un toggle más en el modal de crear/editar partido (**🎬 Tipo de jugada**, junto a Estadísticas del rival, Solo stats de equipo, Reloj se para con falta y Shot Chart), **por defecto OFF**. Si está desactivado, el panel de acciones no muestra los chips y no se etiqueta ningún tiro — cero cambio de comportamiento para partidos que no lo activen.
+- Nuevo campo `trackPlayType` en el objeto de partido.
+
 ## [Sin publicar] · kortline-v2 · Fix botón "Actualizar" del PWA (2026-08-02)
 
 ### Corregido
