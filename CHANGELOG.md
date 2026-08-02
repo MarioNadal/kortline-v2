@@ -3,6 +3,22 @@
 Todos los cambios notables del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · Versionado según [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] · rama `feat/incidencias-jugador` · no mergeada a main
+
+> Trabajo en curso a partir de la revisión de `Mandamientos_CBJaca_2026-2027.docx` (normas del jugador) y `Planificacion_Anual_Cadete_Junior_2025-2026.docx` (modelo de juego). Ver informe `Kortline_Revision_Estadisticas_Incidencias.docx` para el análisis completo de huecos. Este bloque documenta solo lo que ya está implementado en esta rama, pendiente de que Mario lo pruebe y apruebe el merge a `main`.
+
+### Añadido
+
+- **Módulo de Incidencias por jugador** (`p.incidents`): registro de normas incumplidas independiente de Lesiones — categoría (puntualidad / material / actitud / convivencia / otro), fecha, nota y consecuencia aplicada.
+- **Escalado automático** siguiendo la tabla de `Mandamientos_CBJaca_2026-2027.docx`: cada incidencia nueva calcula sola su nivel (1ª vez / 2ª vez / 3ª vez / reincidencia grave) según cuántas tenga ya el jugador, y prerrellena la consecuencia sugerida (aviso verbal → aviso a familia + minutos → banquillo + reunión → valorar continuidad), editable por el entrenador antes de guardar.
+- Botón ⚠️ nuevo en la fila del jugador (pantalla Equipo), entre 🚑 y 🗑, con contador de incidencias visible cuando hay alguna.
+- Editar/borrar incidencias sueltas sin afectar el nivel de escalado ya asignado (el nivel queda fijado al crearse, no se recalcula al editar, para no romper el histórico).
+
+### Pendiente en esta rama
+
+- Vista de "repaso semanal" de incidencias del equipo y campo de MVP semanal (planeado como paso siguiente, no incluido todavía).
+- Flag de "banquillo / minutos reducidos" en convocatoria enlazado a una incidencia.
+
 ## [Sin publicar] · kortline-v2 · rama `main` (marcador en vivo)
 
 > **Nota de alcance:** esta entrada reconstruye, a partir del historial de commits, el trabajo de marcador en vivo hecho en este repo (`kortline-v2`) desde su creación (15 jun) hasta hoy, que nunca se había volcado al CHANGELOG. Está agrupado por tema, no commit a commit — si algo está incompleto o mal descrito, decímelo y lo corrijo.

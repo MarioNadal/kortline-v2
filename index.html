@@ -2275,6 +2275,32 @@ function fdCompact(d){
   try{const dt=new Date(d+"T12:00:00");return dt.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit"});}
   catch{return d;}
 }
+/* ═══════════════════════════════════════
+   INCIDENT HELPERS
+   Sistema de escalado de Mandamientos_CBJaca: cada incidencia nueva de un
+   jugador sube de nivel según cuántas tenga ya registradas. El nivel decide
+   la consecuencia SUGERIDA (editable por el entrenador al guardar).
+═══════════════════════════════════════ */
+const INCIDENT_CATEGORIES=[["puntualidad","⏰ Puntualidad"],["material","🎒 Material"],["actitud","😤 Actitud"],["convivencia","🤝 Convivencia"],["otro","❔ Otro"]];
+// Nivel de escalado según nº de incidencias previas (antes de añadir la nueva).
+// 0 previas → 1ª vez · 1 previa → 2ª vez · 2 previas → 3ª vez · 3+ → reincidencia grave.
+function incidentLevel(prevCount){
+  if(prevCount<=0)return 1;
+  if(prevCount===1)return 2;
+  if(prevCount===2)return 3;
+  return 4;
+}
+const INCIDENT_LEVEL_LABEL={1:"1ª vez",2:"2ª vez",3:"3ª vez",4:"Reincidencia grave"};
+const INCIDENT_LEVEL_CONSEQUENCE={
+  1:"Aviso verbal directo del entrenador, explicando el motivo",
+  2:"Aviso a la familia + reducción de minutos en el siguiente partido",
+  3:"Banquillo en el siguiente partido + reunión con jugador y familia",
+  4:"Se valora la continuidad con dirección deportiva",
+};
+const INCIDENT_LEVEL_COLOR={1:"#f59e0b",2:"#f97316",3:"#ef4444",4:"#dc2626"};
+function incidentCategoryLabel(k){return (INCIDENT_CATEGORIES.find(c=>c[0]===k)||[,k])[1]||k;}
+function playerIncidents(p){return Array.isArray(p&&p.incidents)?p.incidents:[];}
+function incidentCount(p){return playerIncidents(p).length;}
 // Backfill de sesiones del equipo: marca al jugador como 'excused' + _jr='injury'
 // en todas las sesiones dentro del rango [startDate..endDate]. Si noteText está,
 // lo escribe en _jn (útil para pase de lista y justificaciones). También limpia
@@ -3459,7 +3485,13 @@ function team(){
         ?"background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.45);color:#ef4444"
         :"background:var(--s2);border:1px solid var(--border);color:var(--td)";
       const injBtn=`<button onclick="openInjuryModal('${p.id}')" title="${isInj?"Dar de alta / editar lesión":"Marcar lesión"}" style="padding:5px 9px;border-radius:6px;cursor:pointer;font-size:13px;margin-right:4px;${injBtnStyle}">🚑</button>`;
-      return `<div class="pr">${pnum}${avatar}<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px;display:flex;align-items:center;flex-wrap:wrap">${esc(p.name)}${badge}</div><div style="font-size:12px;color:var(--td);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(subLine)}</div></div><button onclick="openPlayerModal(${JSON.stringify({...p,id:p.id}).replace(/"/g,'&quot;')})" title="Editar datos" style="padding:5px 9px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--td);cursor:pointer;font-size:13px;margin-right:4px">✏️</button>${injBtn}<button onclick="delPlayer('${p.id}')" title="Eliminar" style="padding:5px 9px;border-radius:6px;border:none;background:rgba(239,68,68,.1);color:#ef4444;cursor:pointer;font-size:13px">🗑</button></div>`;
+      const incCount=incidentCount(p);
+      const incBtnStyle=incCount>0
+        ?"background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.45);color:#f59e0b"
+        :"background:var(--s2);border:1px solid var(--border);color:var(--td)";
+      const incBadge=incCount>0?`<span class="injury-badge" style="background:#f59e0b" title="${incCount} incidencia${incCount===1?"":"s"}">${incCount}</span>`:"";
+      const incBtn=`<button onclick="openIncidentModal('${p.id}')" title="Incidencias" style="position:relative;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:13px;margin-right:4px;${incBtnStyle}">⚠️${incBadge}</button>`;
+      return `<div class="pr">${pnum}${avatar}<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px;display:flex;align-items:center;flex-wrap:wrap">${esc(p.name)}${badge}</div><div style="font-size:12px;color:var(--td);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(subLine)}</div></div><button onclick="openPlayerModal(${JSON.stringify({...p,id:p.id}).replace(/"/g,'&quot;')})" title="Editar datos" style="padding:5px 9px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--td);cursor:pointer;font-size:13px;margin-right:4px">✏️</button>${injBtn}${incBtn}<button onclick="delPlayer('${p.id}')" title="Eliminar" style="padding:5px 9px;border-radius:6px;border:none;background:rgba(239,68,68,.1);color:#ef4444;cursor:pointer;font-size:13px">🗑</button></div>`;
     }).join("")}</div>`;
   const schedRows=t.schedule&&Object.keys(t.schedule).length?Object.entries(t.schedule).sort((a,b)=>+a[0]-+b[0]).map(([i,time])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:14px">${DAYSF[i]}</div><div style="color:var(--orange);font-family:var(--font-d);font-weight:700;font-size:15px">${time||"—"}</div></div>`).join(""):`<div style="font-size:13px;color:var(--tm);padding:8px 0">Sin horario</div>`;
   // Attendance stats bar
@@ -4539,6 +4571,168 @@ function saveInjury(mid,pid){
   save();render();
   toast(prev&&prev.active?"✏️ Lesión actualizada":"🚑 Lesión guardada · asistencia justificada");
   return true;
+}
+
+/* ═══════════════════════════════════════
+   MODAL DE INCIDENCIAS
+   Registro de normas incumplidas (Mandamientos_CBJaca) con escalado
+   automático 1ª/2ª/3ª vez/reincidencia grave. Independiente de Lesiones:
+   esto es disciplinario, no médico.
+═══════════════════════════════════════ */
+// Modal principal: lista de incidencias del jugador + botón para añadir una.
+// Se abre desde el botón ⚠️ de la fila del jugador.
+function openIncidentModal(pid){
+  const p=pl(S.teamId).find(x=>x.id===pid);if(!p)return;
+  const id="m-incs-"+pid;
+  document.getElementById(id)?.remove();
+  const el=document.createElement("div");el.id=id;
+  el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:flex-end;justify-content:center;";
+  el.onclick=e=>{if(e.target===el)el.remove();};
+  const incs=playerIncidents(p).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
+  const rows=incs.length===0
+    ?`<div style="text-align:center;padding:20px 10px;color:var(--tm);font-size:13px">Sin incidencias registradas.</div>`
+    :incs.map(inc=>{
+      const lvl=inc.level||1;
+      const col=INCIDENT_LEVEL_COLOR[lvl]||"#f59e0b";
+      return`<div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:800;color:${col};background:${col}22;border:1px solid ${col}55;border-radius:5px;padding:1px 7px">${esc(INCIDENT_LEVEL_LABEL[lvl]||"1ª vez")}</span>
+            <span style="font-size:11px;color:var(--td)">${esc(incidentCategoryLabel(inc.category))}</span>
+          </div>
+          <span style="font-size:11px;color:var(--tm)">${fdCompact(inc.date)}</span>
+        </div>
+        ${inc.note?`<div style="font-size:13px;color:var(--tx);margin-bottom:4px">${esc(inc.note)}</div>`:""}
+        ${inc.consequence?`<div style="font-size:12px;color:var(--td);font-style:italic">↳ ${esc(inc.consequence)}</div>`:""}
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button onclick="openIncidentEditModal('${pid}','${inc.id}')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--s3);color:var(--td);font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button>
+          <button onclick="deleteIncident('${pid}','${inc.id}')" style="flex:1;padding:6px;border-radius:6px;border:none;background:rgba(239,68,68,.1);color:#ef4444;font-size:11px;font-weight:700;cursor:pointer">🗑 Borrar</button>
+        </div>
+      </div>`;
+    }).join("");
+  el.innerHTML=`<div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">⚠️ Incidencias</div>
+    <div class="msub">👤 ${esc(p.name)}${p.number!=null?` · #${p.number}`:""} · ${incs.length} registrada${incs.length===1?"":"s"}</div>
+    <div style="max-height:44vh;overflow-y:auto;margin-bottom:12px">${rows}</div>
+    <button class="btn-p" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="openIncidentNewModal('${pid}')">⚠️ Nueva incidencia</button>
+    <button class="btn-s" onclick="document.getElementById('${id}').remove()">Cerrar</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+// Modal de nueva incidencia: fecha, categoría, nota y consecuencia (prerellenada
+// según el nivel de escalado que le toque, editable por el entrenador).
+function openIncidentNewModal(pid){
+  const p=pl(S.teamId).find(x=>x.id===pid);if(!p)return;
+  const id="m-inc-"+pid;
+  document.getElementById(id)?.remove();
+  const el=document.createElement("div");el.id=id;
+  el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:10000;display:flex;align-items:flex-end;justify-content:center;";
+  el.onclick=e=>{if(e.target===el)_closeModal(id);};
+  const level=incidentLevel(incidentCount(p));
+  const cat="actitud";
+  el.innerHTML=`<div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">⚠️ Nueva incidencia</div>
+    <div class="msub">👤 ${esc(p.name)}${p.number!=null?` · #${p.number}`:""}</div>
+    <div id="${id}-lvlbox" style="background:${INCIDENT_LEVEL_COLOR[level]}18;border:1px solid ${INCIDENT_LEVEL_COLOR[level]}55;border-radius:10px;padding:10px 14px;margin-bottom:12px">
+      <div style="font-weight:800;font-size:13px;color:${INCIDENT_LEVEL_COLOR[level]}">${esc(INCIDENT_LEVEL_LABEL[level])}</div>
+      <div style="font-size:11px;color:var(--td);margin-top:2px">Consecuencia sugerida según el escalado del club — puedes ajustarla abajo.</div>
+    </div>
+    <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="${id}-date" value="${esc(td())}"/></div>
+    <div class="fg"><label class="fl">Categoría</label>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px" id="${id}-cats">${INCIDENT_CATEGORIES.map(([k,lb])=>`<button type="button" class="inc-cat${cat===k?" sel":""}" data-k="${k}" onclick="setIncidentCat('${id}','${k}')" style="padding:10px 8px;border-radius:8px;border:1px solid ${cat===k?"#f59e0b":"var(--border)"};background:${cat===k?"rgba(245,158,11,.12)":"var(--s3)"};color:${cat===k?"#f59e0b":"var(--tx)"};font-size:12px;font-weight:700;cursor:pointer">${lb}</button>`).join("")}</div>
+    </div>
+    <div class="fg"><label class="fl">Qué norma se incumplió</label><textarea class="fi" id="${id}-note" rows="2" style="resize:none" placeholder="Ej: llegó 20 min tarde sin avisar"></textarea></div>
+    <div class="fg"><label class="fl">Consecuencia aplicada</label><textarea class="fi" id="${id}-conseq" rows="2" style="resize:none">${esc(INCIDENT_LEVEL_CONSEQUENCE[level])}</textarea></div>
+    <button class="btn-p" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="saveIncident('${id}','${pid}')">⚠️ Guardar incidencia</button>
+    <button class="btn-s" onclick="_closeModal('${id}')">Cancelar</button>
+  </div>`;
+  document.body.appendChild(el);
+  el.dataset.mode="new";
+  el.dataset.level=String(level);
+  _attachModalDirtyTracking(id, ()=>saveIncident(id,pid), "Nueva incidencia");
+}
+// Modal de edición: solo permite corregir fecha/categoría/nota/consecuencia.
+// El nivel (1ª/2ª/3ª/reincidencia) NO se recalcula al editar — queda fijado a
+// cuando se creó, para no romper el histórico de escalado si se borran o
+// editan incidencias antiguas.
+function openIncidentEditModal(pid,incId){
+  const p=pl(S.teamId).find(x=>x.id===pid);if(!p)return;
+  const inc=playerIncidents(p).find(x=>x.id===incId);if(!inc)return;
+  const id="m-inc-"+pid;
+  document.getElementById(id)?.remove();
+  const el=document.createElement("div");el.id=id;
+  el.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:10000;display:flex;align-items:flex-end;justify-content:center;";
+  el.onclick=e=>{if(e.target===el)_closeModal(id);};
+  const level=inc.level||1;
+  const cat=inc.category||"otro";
+  el.innerHTML=`<div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">✏️ Editar incidencia</div>
+    <div class="msub">👤 ${esc(p.name)}${p.number!=null?` · #${p.number}`:""}</div>
+    <div style="background:${INCIDENT_LEVEL_COLOR[level]}18;border:1px solid ${INCIDENT_LEVEL_COLOR[level]}55;border-radius:10px;padding:10px 14px;margin-bottom:12px">
+      <div style="font-weight:800;font-size:13px;color:${INCIDENT_LEVEL_COLOR[level]}">${esc(INCIDENT_LEVEL_LABEL[level])}</div>
+    </div>
+    <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="${id}-date" value="${esc(inc.date||td())}"/></div>
+    <div class="fg"><label class="fl">Categoría</label>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px" id="${id}-cats">${INCIDENT_CATEGORIES.map(([k,lb])=>`<button type="button" class="inc-cat${cat===k?" sel":""}" data-k="${k}" onclick="setIncidentCat('${id}','${k}')" style="padding:10px 8px;border-radius:8px;border:1px solid ${cat===k?"#f59e0b":"var(--border)"};background:${cat===k?"rgba(245,158,11,.12)":"var(--s3)"};color:${cat===k?"#f59e0b":"var(--tx)"};font-size:12px;font-weight:700;cursor:pointer">${lb}</button>`).join("")}</div>
+    </div>
+    <div class="fg"><label class="fl">Qué norma se incumplió</label><textarea class="fi" id="${id}-note" rows="2" style="resize:none">${esc(inc.note||"")}</textarea></div>
+    <div class="fg"><label class="fl">Consecuencia aplicada</label><textarea class="fi" id="${id}-conseq" rows="2" style="resize:none">${esc(inc.consequence||"")}</textarea></div>
+    <button class="btn-p" onclick="saveIncident('${id}','${pid}','${incId}')">Guardar cambios</button>
+    <button class="btn-s" onclick="_closeModal('${id}')">Cancelar</button>
+  </div>`;
+  document.body.appendChild(el);
+  el.dataset.mode="edit";
+  el.dataset.level=String(level);
+  _attachModalDirtyTracking(id, ()=>saveIncident(id,pid,incId), "Editar incidencia");
+}
+function setIncidentCat(mid,k){
+  const wrap=document.getElementById(mid+"-cats");if(!wrap)return;
+  wrap.querySelectorAll(".inc-cat").forEach(btn=>{
+    const on=btn.dataset.k===k;
+    btn.classList.toggle("sel",on);
+    btn.style.border="1px solid "+(on?"#f59e0b":"var(--border)");
+    btn.style.background=on?"rgba(245,158,11,.12)":"var(--s3)";
+    btn.style.color=on?"#f59e0b":"var(--tx)";
+  });
+}
+// Persiste una incidencia nueva o editada. Si incId viene informado, edita en
+// sitio (nivel intacto); si no, crea una nueva con el nivel de escalado actual.
+function saveIncident(mid,pid,incId){
+  const p=pl(S.teamId).find(x=>x.id===pid);if(!p)return false;
+  const modalEl=document.getElementById(mid);
+  const date=document.getElementById(mid+"-date")?.value||td();
+  const catBtn=document.querySelector(`#${mid}-cats .inc-cat.sel`);
+  const category=catBtn?.dataset.k||"otro";
+  const note=document.getElementById(mid+"-note")?.value.trim()||"";
+  const consequence=document.getElementById(mid+"-conseq")?.value.trim()||"";
+  const level=parseInt(modalEl?.dataset.level,10)||1;
+  const list=playerIncidents(p).slice();
+  if(incId){
+    const idx=list.findIndex(x=>x.id===incId);
+    if(idx>=0)list[idx]={...list[idx],date,category,note,consequence};
+  }else{
+    list.push({id:uid(),date,category,note,consequence,level,createdAt:Date.now()});
+  }
+  S.players[S.teamId]=pl(S.teamId).map(x=>x.id===pid?{...x,incidents:list}:x);
+  clearDirty();
+  document.getElementById(mid)?.remove();
+  save();render();
+  toast(incId?"✏️ Incidencia actualizada":"⚠️ Incidencia guardada");
+  return true;
+}
+function deleteIncident(pid,incId){
+  const p=pl(S.teamId).find(x=>x.id===pid);if(!p)return;
+  _confirm("¿Borrar esta incidencia? No se puede deshacer.","🗑 Borrar incidencia",()=>{
+    const list=playerIncidents(p).filter(x=>x.id!==incId);
+    S.players[S.teamId]=pl(S.teamId).map(x=>x.id===pid?{...x,incidents:list}:x);
+    save();render();
+    document.getElementById("m-incs-"+pid)?.remove();
+    openIncidentModal(pid);
+    toast("🗑 Incidencia borrada");
+  });
 }
 function openDeleteConfirm(teamId,date){
   document.getElementById("m-del")?.remove();

@@ -13,6 +13,7 @@
 3. [Pantalla HOY](#3-pantalla-hoy)
 4. [Gestión de equipos y plantilla](#4-gestión-de-equipos-y-plantilla)
 5. [Lesiones 🚑](#5-lesiones-)
+   - 5.5 [Incidencias ⚠️](#55-incidencias-️-rama-featincidencias-jugador-no-mergeada-a-main-todavía)
 6. [Pase de lista (entrenamiento)](#6-pase-de-lista-entrenamiento)
 7. [Día de partido](#7-día-de-partido)
 8. [Shot Chart](#8-shot-chart)
@@ -154,10 +155,11 @@ Los jugadores se ordenan por **dorsal ascendente**; los sin número van al final
 
 ### 4.3 Acciones por fila de jugador
 
-Cada fila tiene tres botones:
+Cada fila tiene cuatro botones:
 
 - ✏️ **Editar** — datos básicos (foto, nombre, dorsal, posición, notas).
 - 🚑 **Lesión** — gris si sano, rojo si lesionado (ver sección 5).
+- ⚠️ **Incidencias** — gris si no tiene ninguna, ámbar con contador si tiene (ver sección 5.5, rama `feat/incidencias-jugador`).
 - 🗑 **Eliminar** — pide confirmación.
 
 ---
@@ -202,6 +204,33 @@ Tras el alta:
 ### 5.4 Historial de lesiones
 
 Dentro del modal de jugador, un panel desplegable muestra el histórico (cuántas, días totales, orígenes). Útil para detectar patrones.
+
+### 5.5 Incidencias ⚠️ (rama `feat/incidencias-jugador`, no mergeada a `main` todavía)
+
+Registro de normas incumplidas (puntualidad, material, actitud, convivencia...), separado de Lesiones — esto es disciplinario, no médico. Basado en el sistema de escalado de `Mandamientos_CBJaca_2026-2027.docx`.
+
+**Ver incidencias / añadir una nueva**
+
+Pulsa **⚠️** en la fila del jugador. Se abre la lista de incidencias del jugador (vacía la primera vez) con un botón **⚠️ Nueva incidencia**.
+
+**Registrar una incidencia**
+
+1. **Fecha** — por defecto hoy.
+2. **Categoría** — chips: ⏰ Puntualidad · 🎒 Material · 😤 Actitud · 🤝 Convivencia · ❔ Otro.
+3. **Qué norma se incumplió** — texto libre corto.
+4. **Consecuencia aplicada** — viene prerrellenada automáticamente según el nivel de escalado del jugador, y es editable:
+   - **1ª vez** → aviso verbal directo del entrenador.
+   - **2ª vez** → aviso a la familia + reducción de minutos en el siguiente partido.
+   - **3ª vez** → banquillo en el siguiente partido + reunión con jugador y familia.
+   - **Reincidencia grave** → se valora la continuidad con dirección deportiva.
+
+El nivel se calcula solo contando las incidencias previas del jugador — no hace falta indicarlo a mano.
+
+**Editar o borrar**
+
+Desde la lista de incidencias, cada tarjeta tiene ✏️ Editar y 🗑 Borrar. Editar permite corregir fecha, categoría, nota o consecuencia sin cambiar el nivel ya asignado (para no romper el histórico de escalado). Borrar pide confirmación.
+
+**Pendiente:** vista de repaso semanal del equipo y MVP semanal — todavía no implementado en esta rama.
 
 ---
 
