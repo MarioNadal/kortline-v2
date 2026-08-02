@@ -39,7 +39,7 @@ Para el manual de usuario, ver [`MANUAL_USUARIO_KORTLINE.md`](MANUAL_USUARIO_KOR
 - Modo "acciones de equipo" (sin jugador concreto) para cuando el rival no tiene plantilla registrada — faltas y canastas de equipo van al lado correcto (propio/rival) independientemente de qué pestaña estés mirando.
 - Shot chart con mapa de cancha tocable, en modo jugador individual y en modo equipo.
 - Vista de estadísticas en directo (cards en landscape, tabla en portrait) con toggle equipo propio / rival.
-- Selector de tipo de jugada (🧍 Estático · 🏃 Transición · 🧱 Bloqueo directo) en el panel de acciones — etiqueta cada tiro de campo propio, base para futuros KPIs de equipo del plan anual.
+- Selector de tipo de jugada (🧍 Estático · 🏃 Transición · 🧱 Bloqueo directo) en el panel de acciones — etiqueta cada tiro de campo propio, base para futuros KPIs de equipo del plan anual. Se activa por partido con el toggle **🎬 Tipo de jugada** al crear/editar el partido (por defecto OFF).
 
 **Lesiones:**
 - Marcar/editar/dar de alta una lesión por jugador, con origen (entreno/partido/fuera) y nota libre.

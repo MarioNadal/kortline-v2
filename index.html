@@ -5634,6 +5634,13 @@ function openMatchModal(init){
       </div>
       <button id="${mid}-sc-btn" class="tswitch ${init?.shotChart?'on':''}" onclick="this.classList.toggle('on')"></button>
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+      <div>
+        <div style="font-weight:700;font-size:14px">🎬 Tipo de jugada <span style="font-size:9px;font-weight:700;background:rgba(240,99,24,.18);color:var(--orange);padding:2px 6px;border-radius:4px;letter-spacing:1px;text-transform:uppercase;margin-left:4px">PRO</span></div>
+        <div style="font-size:12px;color:var(--td);margin-top:2px">Selector 🧍 Estático · 🏃 Transición · 🧱 Bloqueo directo en el panel de acciones. Etiqueta cada tiro de campo propio para las estadísticas del modelo de juego.</div>
+      </div>
+      <button id="${mid}-pt-btn" class="tswitch ${init?.trackPlayType?'on':''}" onclick="this.classList.toggle('on')"></button>
+    </div>
     <button class="btn-p" onclick="saveMatchMeta('${mid}','${init?.id||""}')">${init?"Guardar":"Crear Partido"}</button>
     <button class="btn-s" onclick="_closeModal('${mid}')">Cancelar</button>
   </div>`;
@@ -5973,14 +5980,15 @@ function saveMatchMeta(mid,eid){
   const teamOnlyStats=document.getElementById(mid+"-tos-btn")?.classList.contains("on")||false;
   const stopOnFoul=document.getElementById(mid+"-sof-btn")?.classList.contains("on")||false;
   const shotChart=document.getElementById(mid+"-sc-btn")?.classList.contains("on")||false;
+  const trackPlayType=document.getElementById(mid+"-pt-btn")?.classList.contains("on")||false;
   if(!S.matches[S.teamId])S.matches[S.teamId]=[];
   if(eid){
-    S.matches[S.teamId]=S.matches[S.teamId].map(m=>m.id===eid?{...m,rival,date,time,venue,location,quarters,qMins,rivalStatsEnabled,teamOnlyStats,stopOnFoul,shotChart}:m);
+    S.matches[S.teamId]=S.matches[S.teamId].map(m=>m.id===eid?{...m,rival,date,time,venue,location,quarters,qMins,rivalStatsEnabled,teamOnlyStats,stopOnFoul,shotChart,trackPlayType}:m);
     toast("✅ Partido actualizado");
     clearDirty();
     document.getElementById(mid)?.remove();save();render();
   } else {
-    const nm={id:uid(),rival,date,time,venue,location,quarters,qMins,rivalStatsEnabled,teamOnlyStats,stopOnFoul,shotChart,q:[null,null,null,null,null,null,null,null,null,null],convocados:[],titulares:[],capitan:null,rivalPlayers:[],notes:""};
+    const nm={id:uid(),rival,date,time,venue,location,quarters,qMins,rivalStatsEnabled,teamOnlyStats,stopOnFoul,shotChart,trackPlayType,q:[null,null,null,null,null,null,null,null,null,null],convocados:[],titulares:[],capitan:null,rivalPlayers:[],notes:""};
     S.matches[S.teamId].push(nm);
     S.matchId=nm.id;
     clearDirty();
@@ -6403,7 +6411,7 @@ function liveGame(){
         <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange)">⚡ Acciones</div>
         <div style="font-size:11px;color:var(--td);flex:1;text-align:right">Toca una acción · luego elige el jugador</div>
       </div>
-      ${playTypeChipRow(live)}
+      ${m.trackPlayType?playTypeChipRow(live):""}
       <!-- Puntos -->
       <div style="padding:10px 10px 8px;border-bottom:1px solid var(--border)">
         <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#22c55e;margin-bottom:7px">⚡ PUNTOS</div>
@@ -6857,7 +6865,7 @@ function liveGame(){
       {id:"funsport",l:"ANT",s:"Antidep.",c:"#ef4444",pts:0},{id:"fdq",l:"DESC",s:"Descalif.",c:"#dc2626",pts:0}
     ]}
   ];
-  let teamActionBlock=playTypeChipRow(live);
+  let teamActionBlock=m.trackPlayType?playTypeChipRow(live):"";
   _teamGrps.forEach(grp=>{
     let btns="";
     grp.acts.forEach(a=>{
@@ -7784,7 +7792,7 @@ function liveAction(pid,action,pts){
   // Tipo de jugada (Planificacion_Anual_Cadete_Junior_2025-2026 §7): solo se
   // etiquetan tiros de campo propios (no rival, no TL). Base para los KPIs
   // de equipo (transición, bloqueo directo, % triple sobre tiros de campo).
-  if(!isRivalPid&&(action==="p2m"||action==="p3m"||action==="p2a"||action==="p3a")){
+  if(m.trackPlayType&&!isRivalPid&&(action==="p2m"||action==="p3m"||action==="p2a"||action==="p3a")){
     if(!live.plays)live.plays=[];
     live.plays.push({pid,action,pts,made:(action==="p2m"||action==="p3m"),value:(action==="p3m"||action==="p3a")?3:2,playType:live.playType||"estatico",q:live.q,clockAt:live.clockSec,ts:Date.now()});
   }
@@ -8018,7 +8026,7 @@ function liveTeamAction(action, pts){
       desc:_ACTLABELS[action]||(pts>0?"+"+pts+" pts":action)};
     live.log=[...(live.log||[]),entry].slice(-80);
     // Tipo de jugada — igual que en liveAction, solo tiros de campo propios.
-    if(action==="p2m"||action==="p3m"||action==="p2a"||action==="p3a"){
+    if(m.trackPlayType&&(action==="p2m"||action==="p3m"||action==="p2a"||action==="p3a")){
       if(!live.plays)live.plays=[];
       live.plays.push({pid:"team",action,pts,made:(action==="p2m"||action==="p3m"),value:(action==="p3m"||action==="p3a")?3:2,playType:live.playType||"estatico",q:live.q,clockAt:live.clockSec,ts:Date.now()});
     }
