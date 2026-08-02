@@ -5,6 +5,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) ·
 
 ## [Sin publicar] · kortline-v2 · Incidencias (mergeado a `main` 2026-08-02)
 
+### Corregido (2026-08-02, tras prueba de Mario en el móvil)
+
+- El modal de lista de incidencias no se refrescaba al guardar una nueva: se cerraba el formulario pero la lista de detrás se quedaba con los datos viejos (parecía que no se había guardado nada). Ahora, al guardar, si la lista está abierta debajo se cierra y se vuelve a abrir ya con la incidencia nueva dentro.
+
 > A partir de la revisión de `Mandamientos_CBJaca_2026-2027.docx` (normas del jugador) y `Planificacion_Anual_Cadete_Junior_2025-2026.docx` (modelo de juego). Ver informe `Kortline_Revision_Estadisticas_Incidencias.docx` para el análisis completo de huecos. Mergeado desde `feat/incidencias-jugador`, pendiente de que Mario lo pruebe en el móvil.
 
 ### Añadido

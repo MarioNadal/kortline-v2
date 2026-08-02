@@ -4721,6 +4721,12 @@ function saveIncident(mid,pid,incId){
   document.getElementById(mid)?.remove();
   save();render();
   toast(incId?"✏️ Incidencia actualizada":"⚠️ Incidencia guardada");
+  // Si el modal de lista (m-incs-<pid>) estaba abierto debajo, refrescarlo para
+  // que se vea la incidencia recién guardada sin tener que cerrarlo a mano.
+  if(document.getElementById("m-incs-"+pid)){
+    document.getElementById("m-incs-"+pid).remove();
+    openIncidentModal(pid);
+  }
   return true;
 }
 function deleteIncident(pid,incId){
