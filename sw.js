@@ -2,7 +2,7 @@
 // Cache-first para los assets de la app shell, network-first para el resto.
 // Bump CACHE_VERSION en cada release para invalidar caché vieja en clientes.
 
-const CACHE_VERSION = "kortline-v2.0.0-dev.4";
+const CACHE_VERSION = "kortline-v2.0.0-dev.5";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,6 +14,12 @@ const APP_SHELL = [
 ];
 
 // ── INSTALL: precachear app shell ───────────────────────────────────────────
+// NO llamamos a self.skipWaiting() aquí. El banner "🔄 Nueva versión
+// disponible" de index.html depende de que el SW nuevo se quede en estado
+// "waiting" hasta que el usuario pulse "Actualizar" (que manda el mensaje
+// SKIP_WAITING, ver más abajo). Si activábamos solos en el install, para
+// cuando el usuario veía el botón el cambio de controlador ya había pasado
+// en silencio y el botón no hacía nada por mucho que se pulsara.
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION).then((cache) =>
@@ -28,7 +34,6 @@ self.addEventListener("install", (event) => {
       )
     )
   );
-  self.skipWaiting();
 });
 
 // ── ACTIVATE: limpiar cachés viejas ─────────────────────────────────────────
