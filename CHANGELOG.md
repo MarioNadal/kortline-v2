@@ -3,6 +3,17 @@
 Todos los cambios notables del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · Versionado según [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] · kortline-v2 · Tipo de jugada + fixes de partido en vivo (2026-08-02)
+
+### Añadido
+
+- **Selector de tipo de jugada** en el panel de acciones del marcador en vivo: 🧍 Estático (default) · 🏃 Transición · 🧱 Bloqueo directo. Se queda marcado hasta que se cambie — no añade ningún toque extra al anotar en el caso normal. Cada tiro de campo (anotado o fallado, propio) queda etiquetado en `live.plays[]` con el tipo activo en ese momento. Es la base de datos para los KPIs del plan anual (§7): % triple sobre tiros de campo, puntos de 2ª oportunidad, puntos en transición, eficiencia del bloqueo directo — el panel que los muestra es el siguiente paso, todavía no implementado.
+- Compatible con partidos antiguos: `live.plays` no existe hasta el primer tiro etiquetado, no requiere migración.
+
+### Corregido
+
+- **Botones tapados por el notch/Dynamic Island en iPhone**: los overlays de pantalla completa del live game (Shot Chart, Tiempo Muerto, fin de cuarto, fin de partido) no reservaban espacio para `env(safe-area-inset-top)`, así que el botón "✕ Cancelar" y similares quedaban debajo de la barra de estado en iPhones con notch. Reportado por Mario probando en el móvil. Añadido `padding-top`/`padding-bottom` con `env(safe-area-inset-*)` en los 4 overlays afectados.
+
 ## [Sin publicar] · kortline-v2 · Incidencias (mergeado a `main` 2026-08-02)
 
 ### Corregido (2026-08-02, tras prueba de Mario en el móvil)
