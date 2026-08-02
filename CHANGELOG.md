@@ -19,6 +19,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) ·
 
 - **T2%/T3%/TL% de la tabla "Estadísticas de partidos" podían superar el 100%.** Dividían aciertos entre fallos (`p2m/p2a`) en vez de aciertos entre intentos totales (`p2m/(p2m+p2a)`). Encontrado revisando esta zona del código, corregido de paso.
 
+## [Sin publicar] · kortline-v2 · Export PDF/Excel por pestaña (2026-08-02)
+
+### Añadido
+
+- Las pestañas **🏀 Partidos** y **📈 Equipo** de Estadísticas ahora exportan a PDF/Excel lo que se ve en pantalla (antes solo exportaban de más, la tabla de asistencia, sin relación con la pestaña activa — ver fix anterior). `exportMatchesPDF/Excel` exporta el box score agregado por jugador; `exportTeamKPIsPDF/Excel` exporta los KPIs del plan anual. Gráficas se queda sin export propio (misma asistencia que ya exporta Tabla).
+
 ## [Sin publicar] · kortline-v2 · Fixes de la pantalla de Estadísticas (2026-08-02)
 
 ### Corregido
