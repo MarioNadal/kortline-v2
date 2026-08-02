@@ -3,6 +3,13 @@
 Todos los cambios notables del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · Versionado según [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] · kortline-v2 · Fix botón "Actualizar" del PWA (2026-08-02)
+
+### Corregido
+
+- **El banner "🔄 Nueva versión disponible" no hacía nada al pulsar Actualizar.** `sw.js` llamaba a `self.skipWaiting()` sin condición dentro del handler de `install`, así que el service worker nuevo tomaba el control él solo en segundo plano antes de que el usuario llegara a ver el botón. Para cuando se pulsaba "Actualizar" ya no había ningún SW "esperando" al que mandarle el mensaje, así que no pasaba nada por mucho que se pulsara. Quitado el `skipWaiting()` automático del install — ahora el SW nuevo se queda esperando de verdad hasta que el usuario confirma, tal y como estaba pensado el banner desde `v1.8.6 · B-NEW-4`.
+- Reportado por Mario probando en el móvil. Con recarga completa de la app (cerrarla del todo y reabrir) siempre funcionaba porque la navegación ya iba "network-first" — el bug solo afectaba al atajo del botón dentro de la propia app.
+
 ## [Sin publicar] · kortline-v2 · Tipo de jugada + fixes de partido en vivo (2026-08-02)
 
 ### Añadido
