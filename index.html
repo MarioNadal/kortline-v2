@@ -2758,6 +2758,161 @@ function exportExcel(){
   toast("📊 Excel generado correctamente");
 }
 /* ═══════════════════════════════════════
+   EXPORT — PARTIDOS (pestaña 🏀 Partidos de Estadísticas)
+═══════════════════════════════════════ */
+// Agregado por jugador a partir de los partidos con stats — mismo cálculo que
+// usa la pestaña Partidos en pantalla (stats()), duplicado aquí a propósito
+// para no acoplar el export al render y arriesgar romper la pantalla en vivo.
+function _matchAggRows(){
+  const players=pl(S.teamId);
+  const matchList=(S.matches[S.teamId]||[]).filter(mm=>mm.live&&mm.live.stats&&Object.keys(mm.live.stats).length>0&&(!S.statsMonth||(mm.date||"").startsWith(S.statsMonth)));
+  const matchAgg={};
+  matchList.forEach(mm=>{Object.entries(mm.live.stats).forEach(([pid,st])=>{
+    if(!matchAgg[pid])matchAgg[pid]={pj:0,pts:0,p2m:0,p2a:0,p3m:0,p3a:0,p1m:0,p1a:0,ro:0,rd:0,ast:0,foul:0,frecv:0,stl:0,blk:0,to:0,minSec:0,eff:0};
+    const a=matchAgg[pid];
+    a.pj++;a.pts+=(st.p2m||0)*2+(st.p3m||0)*3+(st.p1m||0);
+    a.p2m+=st.p2m||0;a.p2a+=st.p2a||0;a.p3m+=st.p3m||0;a.p3a+=st.p3a||0;
+    a.p1m+=st.p1m||0;a.p1a+=st.p1a||0;a.ro+=st.ro||0;a.rd+=st.rd||0;
+    a.ast+=st.ast||0;a.foul+=(st.foul||0)+(st.ftech||0)+(st.funsport||0)+(st.fdq||0);
+    a.frecv+=st.frecv||0;
+    a.stl+=st.stl||0;a.blk+=st.blk||0;a.to+=st.to||0;
+    a.minSec+=_getMinSec(mm,pid);
+    a.eff+=_calcEFF(st);
+  });});
+  const rows=players.filter(p=>matchAgg[p.id]).sort((a,b)=>(matchAgg[b.id]?.pts||0)-(matchAgg[a.id]?.pts||0)).map(p=>{
+    const a=matchAgg[p.id];
+    const ppp=a.pj>0?(a.pts/a.pj).toFixed(1):0;
+    const t2pct=(a.p2m+a.p2a)>0?Math.round(a.p2m/(a.p2m+a.p2a)*100):0;
+    const t3pct=(a.p3m+a.p3a)>0?Math.round(a.p3m/(a.p3m+a.p3a)*100):0;
+    const tlpct=(a.p1m+a.p1a)>0?Math.round(a.p1m/(a.p1m+a.p1a)*100):0;
+    const avgMin=a.pj>0?_fmtMin(Math.round(a.minSec/a.pj)):"0:00";
+    const avgEff=a.pj>0?(a.eff/a.pj).toFixed(1):0;
+    return{p,a,ppp,t2pct,t3pct,tlpct,avgMin,avgEff};
+  });
+  return{matchList,rows};
+}
+function exportMatchesPDF(){
+  if(typeof window.jspdf==="undefined"){toast("⚠️ PDF no disponible (cargando...)");return;}
+  const {jsPDF}=window.jspdf;
+  const t=S.teams.find(x=>x.id===S.teamId);
+  const{matchList,rows}=_matchAggRows();
+  if(!rows.length){toast("⚠️ Sin partidos con estadísticas");return;}
+  const doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+  doc.setFillColor(13,34,68);doc.rect(0,0,297,32,"F");
+  doc.setFillColor(240,99,24);doc.rect(0,28,297,4,"F");
+  doc.setFont("helvetica","bold");doc.setFontSize(20);doc.setTextColor(240,99,24);
+  doc.text(S.clubName,14,14);
+  doc.setFontSize(13);doc.setTextColor(240,244,255);
+  doc.text((t?.name||"")+" · Estadísticas de partidos",14,23);
+  doc.setFontSize(8);doc.setTextColor(122,156,200);
+  doc.text(`${matchList.length} partido${matchList.length===1?"":"s"}${S.statsMonth?" · "+cap(fMonth(S.statsMonth)):""}`,283,10,{align:"right"});
+  doc.autoTable({
+    head:[["#","Jugador","PJ","MIN","PTS","PPP","T2%","T3%","TL%","RO","RD","AST","F","FR","ROB","TAP","PER","VAL"]],
+    body:rows.map(r=>[r.p.number!=null?r.p.number:"—",r.p.name,r.a.pj,r.avgMin,r.a.pts,r.ppp,r.t2pct+"%",r.t3pct+"%",r.tlpct+"%",r.a.ro,r.a.rd,r.a.ast,r.a.foul,r.a.frecv,r.a.stl,r.a.blk,r.a.to,r.avgEff]),
+    startY:38,
+    styles:{fontSize:8,cellPadding:3,textColor:[240,244,255],fillColor:[12,24,41],font:"helvetica"},
+    headStyles:{fillColor:[13,34,68],textColor:[240,99,24],fontStyle:"bold",fontSize:8},
+    alternateRowStyles:{fillColor:[17,31,52]},
+    columnStyles:{0:{halign:"center"},1:{cellWidth:32}}
+  });
+  const pagesCount=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pagesCount;i++){
+    doc.setPage(i);
+    doc.setFillColor(13,34,68);doc.rect(0,200,297,10,"F");
+    doc.setFontSize(7);doc.setTextColor(122,156,200);
+    doc.text(`${S.clubName} · Kortline App`,14,206);
+    doc.text(`Pág. ${i}/${pagesCount}`,283,206,{align:"right"});
+  }
+  const fn=(t?.name||"equipo").replace(/[^a-z0-9]/gi,"_").toLowerCase();
+  doc.save(`${fn}_partidos.pdf`);
+  toast("📄 PDF generado correctamente");
+}
+function exportMatchesExcel(){
+  if(typeof XLSX==="undefined"){toast("⚠️ Excel no disponible (cargando...)");return;}
+  const t=S.teams.find(x=>x.id===S.teamId);
+  const{matchList,rows}=_matchAggRows();
+  if(!rows.length){toast("⚠️ Sin partidos con estadísticas");return;}
+  const wb=XLSX.utils.book_new();
+  const head=["#","Jugador","PJ","MIN","PTS","PPP","T2%","T3%","TL%","RO","RD","AST","F","FR","ROB","TAP","PER","VAL"];
+  const body=rows.map(r=>[r.p.number!=null?r.p.number:"",r.p.name,r.a.pj,r.avgMin,r.a.pts,parseFloat(r.ppp),r.t2pct/100,r.t3pct/100,r.tlpct/100,r.a.ro,r.a.rd,r.a.ast,r.a.foul,r.a.frecv,r.a.stl,r.a.blk,r.a.to,parseFloat(r.avgEff)]);
+  const ws=XLSX.utils.aoa_to_sheet([head,...body]);
+  ws["!cols"]=head.map((h,i)=>({wch:i===1?22:8}));
+  const rg=XLSX.utils.decode_range(ws["!ref"]||"A1");
+  [6,7,8].forEach(c=>{for(let r=1;r<=rg.e.r;r++){const cell=ws[XLSX.utils.encode_cell({r,c})];if(cell)cell.z="0%";}});
+  XLSX.utils.book_append_sheet(wb,ws,"Partidos");
+  const fn=(t?.name||"equipo").replace(/[^a-z0-9]/gi,"_").toLowerCase();
+  XLSX.writeFile(wb,`${fn}_partidos.xlsx`);
+  toast("📊 Excel generado correctamente");
+}
+/* ═══════════════════════════════════════
+   EXPORT — ESTADÍSTICAS DE EQUIPO (pestaña 📈 Equipo)
+═══════════════════════════════════════ */
+function _teamKPIRows(k){
+  const rows=[
+    ["% de tiros de 3 sobre tiros de campo",k.fga>0?k.pct3ofFGA+"%":"—",k.p3att+" de "+k.fga+" tiros fueron triples ("+k.p3m+" anotados)"],
+    ["Rebotes ofensivos",k.ro,"totales en "+k.totalMatches+" partido"+(k.totalMatches===1?"":"s")],
+    ["Puntos de 2ª oportunidad",k.secondChancePts,k.secondChanceCount+" rebote"+(k.secondChanceCount===1?"":"s")+" ofensivo"+(k.secondChanceCount===1?"":"s")+" seguido de tiro"],
+    ["Pérdidas",k.to,"total del equipo (aproximado, no distingue salida rápida)"],
+  ];
+  if(k.hasPlayTypeData){
+    rows.push(["Puntos en transición",k.transPts,k.transPoss+" tiro"+(k.transPoss===1?"":"s")+" marcado"+(k.transPoss===1?"":"s")+" como transición"]);
+    rows.push(["Eficiencia bloqueo directo (PPP)",k.bdPoss>0?k.bdPPP.toFixed(2):"—",k.bdPoss+" posesion"+(k.bdPoss===1?"":"es")+" · "+k.bdPts+" puntos"]);
+  }
+  return rows;
+}
+function exportTeamKPIsPDF(){
+  if(typeof window.jspdf==="undefined"){toast("⚠️ PDF no disponible (cargando...)");return;}
+  const {jsPDF}=window.jspdf;
+  const t=S.teams.find(x=>x.id===S.teamId);
+  const matchList=(S.matches[S.teamId]||[]).filter(mm=>mm.live&&mm.live.stats&&Object.keys(mm.live.stats).length>0&&(!S.statsMonth||(mm.date||"").startsWith(S.statsMonth)));
+  if(!matchList.length){toast("⚠️ Sin partidos con estadísticas");return;}
+  const k=computeTeamKPIs(matchList);
+  const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  doc.setFillColor(13,34,68);doc.rect(0,0,210,32,"F");
+  doc.setFillColor(240,99,24);doc.rect(0,28,210,4,"F");
+  doc.setFont("helvetica","bold");doc.setFontSize(20);doc.setTextColor(240,99,24);
+  doc.text(S.clubName,14,14);
+  doc.setFontSize(13);doc.setTextColor(240,244,255);
+  doc.text((t?.name||"")+" · Estadísticas de equipo",14,23);
+  doc.setFontSize(8);doc.setTextColor(122,156,200);
+  doc.text(`${k.totalMatches} partido${k.totalMatches===1?"":"s"}${S.statsMonth?" · "+cap(fMonth(S.statsMonth)):""}`,196,10,{align:"right"});
+  doc.autoTable({
+    head:[["KPI","Valor","Detalle"]],
+    body:_teamKPIRows(k),
+    startY:38,
+    styles:{fontSize:10,cellPadding:4,textColor:[240,244,255],fillColor:[12,24,41],font:"helvetica"},
+    headStyles:{fillColor:[13,34,68],textColor:[240,99,24],fontStyle:"bold",fontSize:10},
+    alternateRowStyles:{fillColor:[17,31,52]},
+    columnStyles:{0:{cellWidth:60,fontStyle:"bold"},1:{cellWidth:24,halign:"center"}}
+  });
+  if(!k.hasPlayTypeData){
+    const y=doc.lastAutoTable.finalY+10;
+    doc.setFontSize(9);doc.setTextColor(122,156,200);
+    doc.text("Puntos en transición y eficiencia de bloqueo directo requieren activar el toggle",14,y);
+    doc.text('"🎬 Tipo de jugada" al crear el partido — ningún partido de este período lo tenía.',14,y+5);
+  }
+  doc.setFillColor(13,34,68);doc.rect(0,287,210,10,"F");
+  doc.setFontSize(7);doc.setTextColor(122,156,200);
+  doc.text(`${S.clubName} · Kortline App`,14,293);
+  const fn=(t?.name||"equipo").replace(/[^a-z0-9]/gi,"_").toLowerCase();
+  doc.save(`${fn}_kpis_equipo.pdf`);
+  toast("📄 PDF generado correctamente");
+}
+function exportTeamKPIsExcel(){
+  if(typeof XLSX==="undefined"){toast("⚠️ Excel no disponible (cargando...)");return;}
+  const t=S.teams.find(x=>x.id===S.teamId);
+  const matchList=(S.matches[S.teamId]||[]).filter(mm=>mm.live&&mm.live.stats&&Object.keys(mm.live.stats).length>0&&(!S.statsMonth||(mm.date||"").startsWith(S.statsMonth)));
+  if(!matchList.length){toast("⚠️ Sin partidos con estadísticas");return;}
+  const k=computeTeamKPIs(matchList);
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([["KPI","Valor","Detalle"],..._teamKPIRows(k)]);
+  ws["!cols"]=[{wch:34},{wch:12},{wch:50}];
+  XLSX.utils.book_append_sheet(wb,ws,"KPIs equipo");
+  const fn=(t?.name||"equipo").replace(/[^a-z0-9]/gi,"_").toLowerCase();
+  XLSX.writeFile(wb,`${fn}_kpis_equipo.xlsx`);
+  toast("📊 Excel generado correctamente");
+}
+/* ═══════════════════════════════════════
    RENDER
 ═══════════════════════════════════════ */
 function render(){
@@ -3453,7 +3608,13 @@ function stats(){
     ${view==="table"?`<div class="export-bar">
       <button class="btn-xpdf" onclick="exportPDF()">📄 PDF</button>
       <button class="btn-xxls" onclick="exportExcel()">📊 Excel</button>
-    </div>`:`<div style="font-size:11px;color:var(--tm);text-align:center;padding:6px 0 12px">📄 La exportación a PDF/Excel es de la tabla de asistencia · pestaña 📋 Tabla</div>`}
+    </div>`:view==="matches"?`<div class="export-bar">
+      <button class="btn-xpdf" onclick="exportMatchesPDF()">📄 PDF</button>
+      <button class="btn-xxls" onclick="exportMatchesExcel()">📊 Excel</button>
+    </div>`:view==="team"?`<div class="export-bar">
+      <button class="btn-xpdf" onclick="exportTeamKPIsPDF()">📄 PDF</button>
+      <button class="btn-xxls" onclick="exportTeamKPIsExcel()">📊 Excel</button>
+    </div>`:`<div style="font-size:11px;color:var(--tm);text-align:center;padding:6px 0 12px">📄 Las gráficas son la misma asistencia que ya exporta la pestaña 📋 Tabla</div>`}
     ${view==="charts"?chartsHTML:view==="matches"?matchesHTML:view==="team"?teamKPIHtml(computeTeamKPIs(matchList)):`
       <div class="ptabs">
         <button class="ptab ${f==="all"?"on":""}" onclick="S.sf='all';render()">Todos (${pst.length})</button>
