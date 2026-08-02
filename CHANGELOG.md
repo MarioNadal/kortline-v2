@@ -19,6 +19,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) ·
 
 - **T2%/T3%/TL% de la tabla "Estadísticas de partidos" podían superar el 100%.** Dividían aciertos entre fallos (`p2m/p2a`) en vez de aciertos entre intentos totales (`p2m/(p2m+p2a)`). Encontrado revisando esta zona del código, corregido de paso.
 
+## [Sin publicar] · kortline-v2 · Auditoría completa + fix escapado rival (2026-08-02)
+
+### Corregido
+
+- **Nombres de jugadores rivales sin escapar** en 2 modales de tiros libres (`openFoulTLModal`, `openTLShootModal`) — se insertaban directamente en el HTML sin pasar por `esc()`, a diferencia del resto de la app. Bajo impacto real (app de un solo usuario) pero corregido por consistencia y robustez.
+
+### Añadido
+
+- `QA_AUDIT_2026-08-02.md`: auditoría completa del código + simulación headless de una temporada casi entera (equipo desde cero, 12 jugadores, 20 entrenamientos, lesiones, incidencias, 9 partidos con seguimiento en vivo — bonus, prórroga, tiempos muertos, shot chart, tipo de jugada). 32/32 comprobaciones superadas, 0 errores de JS.
+
 ## [Sin publicar] · kortline-v2 · MVP semanal + minutos reducidos (2026-08-02)
 
 ### Añadido
