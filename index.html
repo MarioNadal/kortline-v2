@@ -1835,7 +1835,7 @@ const POSITIONS=["Base","Escolta","Alero","Ala-Pívot","Pívot"];
 const ASTS=["present","absent","late","excused"];
 const AV={present:{l:"Presente",c:"#22c55e",bg:"rgba(34,197,94,.15)",i:"✓"},absent:{l:"Ausente",c:"#ef4444",bg:"rgba(239,68,68,.15)",i:"✗"},late:{l:"Tarde",c:"#f59e0b",bg:"rgba(245,158,11,.15)",i:"⏱"},excused:{l:"Justif.",c:"#6b7280",bg:"rgba(107,114,128,.15)",i:"◎"}};
 const JUST_REASONS=[{id:"sick",label:"Enfermo/a",icon:"🤒"},{id:"injury",label:"Lesionado/a",icon:"🤕"},{id:"study",label:"Examen/Estudio",icon:"📚"},{id:"vacation",label:"Vacaciones",icon:"🏖️"},{id:"travel",label:"Viaje",icon:"✈️"},{id:"family",label:"Familia",icon:"👪"},{id:"punishment",label:"Castigado/a",icon:"😤"},{id:"other",label:"Otro",icon:"📝"}];
-const DEFAULT_CFG={riskThreshold:75,features:{teamScore:false,playerScore:false,photos:false,exercises:false,quickMode:false,chainPrompt:true}};
+const DEFAULT_CFG={riskThreshold:75,features:{teamScore:false,playerScore:false,photos:false,exercises:false,quickMode:false,chainPrompt:true,incidents:true}};
 /* ═══════════════════════════════════════
    FEATURE FLAGS (v1.0.0)
 ═══════════════════════════════════════ */
@@ -3490,7 +3490,7 @@ function team(){
         ?"background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.45);color:#f59e0b"
         :"background:var(--s2);border:1px solid var(--border);color:var(--td)";
       const incBadge=incCount>0?`<span class="injury-badge" style="background:#f59e0b" title="${incCount} incidencia${incCount===1?"":"s"}">${incCount}</span>`:"";
-      const incBtn=`<button onclick="openIncidentModal('${p.id}')" title="Incidencias" style="position:relative;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:13px;margin-right:4px;${incBtnStyle}">⚠️${incBadge}</button>`;
+      const incBtn=S.cfg.features.incidents?`<button onclick="openIncidentModal('${p.id}')" title="Incidencias" style="position:relative;padding:5px 9px;border-radius:6px;cursor:pointer;font-size:13px;margin-right:4px;${incBtnStyle}">⚠️${incBadge}</button>`:"";
       return `<div class="pr">${pnum}${avatar}<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:15px;display:flex;align-items:center;flex-wrap:wrap">${esc(p.name)}${badge}</div><div style="font-size:12px;color:var(--td);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(subLine)}</div></div><button onclick="openPlayerModal(${JSON.stringify({...p,id:p.id}).replace(/"/g,'&quot;')})" title="Editar datos" style="padding:5px 9px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--td);cursor:pointer;font-size:13px;margin-right:4px">✏️</button>${injBtn}${incBtn}<button onclick="delPlayer('${p.id}')" title="Eliminar" style="padding:5px 9px;border-radius:6px;border:none;background:rgba(239,68,68,.1);color:#ef4444;cursor:pointer;font-size:13px">🗑</button></div>`;
     }).join("")}</div>`;
   const schedRows=t.schedule&&Object.keys(t.schedule).length?Object.entries(t.schedule).sort((a,b)=>+a[0]-+b[0]).map(([i,time])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600;font-size:14px">${DAYSF[i]}</div><div style="color:var(--orange);font-family:var(--font-d);font-weight:700;font-size:15px">${time||"—"}</div></div>`).join(""):`<div style="font-size:13px;color:var(--tm);padding:8px 0">Sin horario</div>`;
@@ -4041,6 +4041,10 @@ function openClubSettings(){
       <div class="stg-sec-title">🚀 Modo rápido (live game)</div>
       <div style="font-size:12px;color:var(--tm);margin:-4px 0 12px;line-height:1.5">Pensado para anotadores que quieren mantener el ritmo del partido sin distraerse con preguntas extra.</div>
       ${toggleHtml("chainPrompt","🔗 Preguntar asistencia y rebote","Tras anotar canasta pregunta quién dio la asistencia; tras un fallo, quién cogió el rebote. Actívalo para estadísticas más completas.")}
+    </div>
+    <div class="stg-sec">
+      <div class="stg-sec-title">👥 Gestión de jugadores</div>
+      ${toggleHtml("incidents","⚠️ Incidencias","Registro de normas incumplidas por jugador con escalado 1ª/2ª/3ª vez, independiente de Lesiones. Desactívalo si tu club no usa un sistema de normas/consecuencias.")}
     </div>
     <div class="stg-sec">
       <div class="stg-sec-title">📊 Estadísticas y exportación</div>

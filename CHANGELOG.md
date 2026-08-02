@@ -3,6 +3,12 @@
 Todos los cambios notables del proyecto se documentan aquí.
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) · Versionado según [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar] · kortline-v2 · Incidencias como toggle en Ajustes (2026-08-02)
+
+### Cambiado
+
+- El módulo de Incidencias ahora se puede desactivar desde **Ajustes del club → 👥 Gestión de jugadores → ⚠️ Incidencias** (nueva sección `S.cfg.features.incidents`, **por defecto ON** para no cambiar nada a quien ya lo esté usando). Pensado de cara a que si en el futuro otro club usa Kortline y no quiere un sistema de normas/consecuencias como el de CB Jaca, lo apague con un switch sin tocar código. Mismo patrón que el resto de toggles de Ajustes (Valoración individual, Ejercicios de sesión, etc.).
+
 ## [Sin publicar] · kortline-v2 · Tipo de jugada como opción del partido (2026-08-02)
 
 ### Cambiado
