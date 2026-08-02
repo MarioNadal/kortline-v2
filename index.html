@@ -8215,7 +8215,7 @@ function openFoulTLModal(foulerPid, isTech, foulKind){
     :rivalPlayers.map(rp=>`
       <button onclick="selectFoulRecipient(this,'${rp.id}')" data-rpid="${rp.id}" style="display:flex;align-items:center;gap:10px;width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;margin-bottom:6px;text-align:left">
         <div style="width:32px;height:32px;border-radius:7px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.35);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#ef4444;flex-shrink:0">${rp.number||"?"}</div>
-        <div style="font-weight:700;font-size:15px;color:var(--tx)">${rp.name}</div>
+        <div style="font-weight:700;font-size:15px;color:var(--tx)">${esc(rp.name||"")}</div>
       </button>`).join("");
   const el=document.createElement("div");
   el.id="m-foultl";
@@ -8301,7 +8301,7 @@ function openTLShootModal(rpid, total, foulerPid){
   el.innerHTML=`<div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle">🎯 Tiros libres</div>
-    <div class="msub"><b style="color:#ef4444">${rname}</b> — ${total} tiro${total>1?"s":""}. Toca los que <b style="color:#22c55e">entran</b>.</div>
+    <div class="msub"><b style="color:#ef4444">${esc(rname)}</b> — ${total} tiro${total>1?"s":""}. Toca los que <b style="color:#22c55e">entran</b>.</div>
     <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--td);margin-bottom:10px">Por defecto fallados ✗ · toca para marcar ✓ entra</div>
     <div id="tl-btns-grid" style="display:flex;gap:8px;margin-bottom:16px"></div>
     <button class="btn-p" id="tl-confirm" onclick="saveTLResults('${rpid}',${total},'${foulerPid}')">Guardar (0/${total} entran)</button>
