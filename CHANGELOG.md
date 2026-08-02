@@ -19,6 +19,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) ·
 
 - **T2%/T3%/TL% de la tabla "Estadísticas de partidos" podían superar el 100%.** Dividían aciertos entre fallos (`p2m/p2a`) en vez de aciertos entre intentos totales (`p2m/(p2m+p2a)`). Encontrado revisando esta zona del código, corregido de paso.
 
+## [Sin publicar] · kortline-v2 · Fixes de la pantalla de Estadísticas (2026-08-02)
+
+### Corregido
+
+- **Texto raro en el KPI "% triple / tiros de campo".** Quitada la referencia "§7 del plan anual" del subtítulo — el símbolo § no se veía bien en el móvil. Reportado por Mario en el móvil.
+- **Exportar PDF/Excel aparecía en las 4 pestañas de Estadísticas pero solo exporta la tabla de asistencia** (nunca partidos, gráficas ni el nuevo panel de Equipo) — confuso, parecía que exportaba lo que estabas mirando. Los botones ahora solo aparecen en la pestaña 📋 Tabla; en las otras tres se muestra una nota explicando dónde está. Reportado por Mario en el móvil.
+
 ## [Sin publicar] · kortline-v2 · Incidencias como toggle en Ajustes (2026-08-02)
 
 ### Cambiado

@@ -925,7 +925,7 @@ function teamKPIHtml(k){
     return`<div class="empty"><div style="font-size:40px;margin-bottom:10px;opacity:.4">📈</div><div style="font-size:14px;color:var(--tm)">Sin partidos con estadísticas en este período.</div></div>`;
   }
   const basicRow=`<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-    ${card("% triple / tiros de campo",k.fga>0?k.pct3ofFGA+"%":"—","§7 del plan anual · "+k.p3att+" de "+k.fga+" tiros de campo fueron triples ("+k.p3m+" anotados)","var(--orange)")}
+    ${card("% triple / tiros de campo",k.fga>0?k.pct3ofFGA+"%":"—",k.p3att+" de "+k.fga+" tiros de campo fueron triples ("+k.p3m+" anotados)","var(--orange)")}
     ${card("Rebotes ofensivos",k.ro,"totales en "+k.totalMatches+" partido"+(k.totalMatches===1?"":"s"),"#a855f7")}
   </div>
   <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
@@ -3450,10 +3450,10 @@ function stats(){
       <button class="view-tab ${view==="matches"?"on":""}" onclick="S.statsView='matches';render()">🏀 Partidos</button>
       <button class="view-tab ${view==="team"?"on":""}" onclick="S.statsView='team';render()">📈 Equipo</button>
     </div>
-    <div class="export-bar">
+    ${view==="table"?`<div class="export-bar">
       <button class="btn-xpdf" onclick="exportPDF()">📄 PDF</button>
       <button class="btn-xxls" onclick="exportExcel()">📊 Excel</button>
-    </div>
+    </div>`:`<div style="font-size:11px;color:var(--tm);text-align:center;padding:6px 0 12px">📄 La exportación a PDF/Excel es de la tabla de asistencia · pestaña 📋 Tabla</div>`}
     ${view==="charts"?chartsHTML:view==="matches"?matchesHTML:view==="team"?teamKPIHtml(computeTeamKPIs(matchList)):`
       <div class="ptabs">
         <button class="ptab ${f==="all"?"on":""}" onclick="S.sf='all';render()">Todos (${pst.length})</button>
