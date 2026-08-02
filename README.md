@@ -47,7 +47,7 @@ Para el manual de usuario, ver [`MANUAL_USUARIO_KORTLINE.md`](MANUAL_USUARIO_KOR
 - Congela el % de asistencia previo a la lesión (snapshot) para que el riesgo FEB no penalice al jugador mientras está lesionado.
 - Historial de lesiones por jugador (fecha inicio/fin, días, origen).
 
-**Incidencias:**
+**Incidencias** (activable/desactivable en Ajustes del club → Gestión de jugadores):
 - Registro de normas incumplidas por jugador (puntualidad, material, actitud, convivencia, otro), independiente de Lesiones.
 - Escalado automático 1ª vez / 2ª vez / 3ª vez / reincidencia grave según la tabla de `Mandamientos_CBJaca_2026-2027.docx`, con consecuencia sugerida editable.
 - Botón ⚠️ en la fila del jugador (pantalla Equipo) con contador de incidencias.
